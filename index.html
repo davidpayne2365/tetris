@@ -2,232 +2,245 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Mobile Tetris</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biweekly Paycheck Calculator</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-    }
     body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background-color: #f9f9f9;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(20, 1fr);
-      height: 100vh;
-      width: calc(100vh * (20 / 20)); /* keeps grid square */
-      gap: 0;
-      background: black;
+
+    h2 {
+      text-align: center;
+      color: #333;
     }
-    .cell {
-      aspect-ratio: 1/1;
-      background-color: black;
+
+    .container {
+      max-width: 500px;
+      width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    .cell.active {
-      background-color: white;
+
+    label {
+      font-weight: bold;
+      margin-top: 10px;
     }
-    .cell.color-0 { background-color: cyan; }     /* I piece */
-    .cell.color-1 { background-color: yellow; }   /* O piece */
-    .cell.color-2 { background-color: purple; }   /* T piece */
-    .cell.color-3 { background-color: blue; }     /* J piece */
-    .cell.color-4 { background-color: orange; }   /* L piece */
-    .cell.color-5 { background-color: green; }    /* S piece */
-    .cell.color-6 { background-color: red; }      /* Z piece */
+
+    input[type="number"], select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .day {
+      margin-top: 10px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    .breakdown {
+      margin-top: 10px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .note {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+      color: #555;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <div id="grid" class="grid"></div>
+  <div class="container">
+    <h2>Biweekly Paycheck Calculator</h2>
+
+    <label for="wage">Hourly Wage ($):</label>
+    <input type="number" id="wage" step="0.01" min="0" />
+
+    <label for="state">Select Your State:</label>
+    <select id="state">
+      <option value="0">-- Select State --</option>
+      <option value="0.00">Alabama (Non-Licensed)</option>
+      <option value="0.00">Alaska (Non-Licensed)</option>
+      <option value="0.00">Arizona (Non-Licensed)</option>
+      <option value="0.00">Arkansas</option>
+      <option value="0.00">California</option>
+      <option value="0.00">Colorado (Non-Licensed)</option>
+      <option value="0.00">Connecticut</option>
+      <option value="0.00">Delaware</option>
+      <option value="0.00">Florida</option>
+      <option value="0.00">Georgia (Non-Licensed)</option>
+      <option value="0.00">Hawaii</option>
+      <option value="0.00">Idaho (Non-Licensed)</option>
+      <option value="0.00">Illinois</option>
+      <option value="0.00">Indiana (Non-Licensed)</option>
+      <option value="0.00">Iowa</option>
+      <option value="0.00">Kansas (Non-Licensed)</option>
+      <option value="0.00">Kentucky (Non-Licensed)</option>
+      <option value="0.00">Louisiana</option>
+      <option value="0.00">Maine</option>
+      <option value="0.00">Maryland</option>
+      <option value="0.00">Massachusetts</option>
+      <option value="0.00">Michigan</option>
+      <option value="0.00">Minnesota (Non-Licensed)</option>
+      <option value="0.00">Mississippi</option>
+      <option value="0.00">Missouri (Non-Licensed)</option>
+      <option value="0.00">Montana</option>
+      <option value="0.00">Nebraska</option>
+      <option value="0.00">Nevada (Non-Licensed)</option>
+      <option value="0.00">New Hampshire (Non-Licensed)</option>
+      <option value="0.00">New Jersey</option>
+      <option value="0.00">New Mexico (Non-Licensed)</option>
+      <option value="0.00">New York</option>
+      <option value="0.00">North Carolina (Non-Licensed)</option>
+      <option value="0.00">North Dakota</option>
+      <option value="0.00">Ohio</option>
+      <option value="0.00">Oklahoma</option>
+      <option value="0.00">Oregon</option>
+      <option value="0.00">Pennsylvania</option>
+      <option value="0.00">Rhode Island</option>
+      <option value="0.00">South Carolina (Non-Licensed)</option>
+      <option value="0.00">South Dakota (Non-Licensed)</option>
+      <option value="0.00">Tennessee (Non-Licensed)</option>
+      <option value="0.00">Texas (Non-Licensed)</option>
+      <option value="0.00">Utah</option>
+      <option value="0.00">Vermont (Non-Licensed)</option>
+      <option value="0.00">Virginia</option>
+      <option value="0.00">Washington</option>
+      <option value="0.00">West Virginia</option>
+      <option value="0.00">Wisconsin (Non-Licensed)</option>
+      <option value="0.00">Wyoming</option>
+    </select>
+
+    <div class="checkbox-label">
+      <input type="checkbox" id="applyFederal" />
+      <label for="applyFederal">Apply Federal Tax (10%)</label>
+    </div>
+
+    <button onclick="alertNonLicensedStates()">View Non-Licensed States for Opticians</button>
+
+    <div id="week">
+      <div class="day"><label>Monday Hours: <input type="number" id="mon" min="0" /></label></div>
+      <div class="day"><label>Tuesday Hours: <input type="number" id="tue" min="0" /></label></div>
+      <div class="day"><label>Wednesday Hours: <input type="number" id="wed" min="0" /></label></div>
+      <div class="day"><label>Thursday Hours: <input type="number" id="thu" min="0" /></label></div>
+      <div class="day"><label>Friday Hours: <input type="number" id="fri" min="0" /></label></div>
+      <div class="day"><label>Saturday Hours: <input type="number" id="sat" min="0" /></label></div>
+      <div class="day"><label>Sunday Hours: <input type="number" id="sun" min="0" /></label></div>
+    </div>
+
+    <button onclick="calculatePay()">Calculate Biweekly Paycheck</button>
+    <div class="result" id="result"></div>
+    <div class="result" id="totalHours"></div>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
 
   <script>
-    const gridEl = document.getElementById("grid");
-    const cols = 20;
-    const rows = 20;
-    const grid = Array.from({ length: rows }, () => Array(cols).fill(0));
-    const gridColors = Array.from({ length: rows }, () => Array(cols).fill(0));
-
-    const shapes = [
-      [[1, 1, 1, 1]],
-      [[1, 1], [1, 1]],
-      [[0, 1, 0], [1, 1, 1]],
-      [[1, 0, 0], [1, 1, 1]],
-      [[0, 0, 1], [1, 1, 1]],
-      [[0, 1, 1], [1, 1, 0]],
-      [[1, 1, 0], [0, 1, 1]]
-    ];
-
-    function randomShape() {
-      const shapeIndex = Math.floor(Math.random() * shapes.length);
-      const shape = shapes[shapeIndex];
-      const shapeWidth = shape[0].length;
-      const startX = Math.floor((cols - shapeWidth) / 2);
-      return { x: startX, y: 0, shape, colorIndex: shapeIndex };
+    function alertNonLicensedStates() {
+      const states = [
+        'Alabama', 'Alaska', 'Arizona', 'Colorado', 'Georgia', 'Idaho',
+        'Indiana', 'Kansas', 'Kentucky', 'Minnesota', 'Missouri', 'Nevada',
+        'New Hampshire', 'New Mexico', 'North Carolina', 'South Carolina',
+        'South Dakota', 'Tennessee', 'Texas', 'Vermont', 'Wisconsin'
+      ];
+      alert("States that do not require a license for opticians:\n\n" + states.join(", "));
     }
 
-    let current = randomShape();
+    function calculatePay() {
+      const wage = Math.max(parseFloat(document.getElementById('wage').value) || 0, 0);
+      const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+      let weeklyHours = 0;
 
-    function shapeHeight(shape) {
-      for (let i = shape.length - 1; i >= 0; i--) {
-        if (shape[i].some(val => val)) return i + 1;
+      for (let i = 0; i < days.length; i++) {
+        let hours = Math.max(parseFloat(document.getElementById(days[i]).value) || 0, 0);
+        weeklyHours += hours;
       }
-      return shape.length;
-    }
 
-    function draw() {
-      gridEl.innerHTML = '';
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          const cell = document.createElement('div');
-          cell.className = 'cell';
-          if (grid[y][x]) {
-            cell.classList.add('active');
-            cell.classList.add(`color-${gridColors[y][x]}`);
-          } else if (
-            current.shape.some((r, dy) =>
-              r.some((v, dx) => v && current.y + dy === y && current.x + dx === x)
-            )
-          ) {
-            cell.classList.add('active');
-            cell.classList.add(`color-${current.colorIndex}`);
-          }
-          gridEl.appendChild(cell);
-        }
-      }
-    }
+      const cappedRegularHours = Math.min(weeklyHours, 40);
 
-    function canMove(shape, x, y) {
-      return shape.every((row, dy) =>
-        row.every((val, dx) => {
-          if (!val) return true;
-          const nx = x + dx;
-          const ny = y + dy;
-          return nx >= 0 && nx < cols && ny >= 0 && ny < rows && !grid[ny][nx];
-        })
-      );
-    }
-
-    function rotate(shape) {
-      return shape[0].map((_, i) => shape.map(row => row[i])).reverse();
-    }
-
-    function tryRotate() {
-      const rotated = rotate(current.shape);
-      let offsetX = 0;
-      while (!canMove(rotated, current.x + offsetX, current.y)) {
-        offsetX++;
-        if (offsetX > cols) return;
-      }
-      current.x += offsetX;
-      current.shape = rotated;
-    }
-
-    function merge() {
-      current.shape.forEach((row, dy) =>
-        row.forEach((val, dx) => {
-          if (
-            val &&
-            current.y + dy < rows &&
-            current.x + dx >= 0 &&
-            current.x + dx < cols
-          ) {
-            grid[current.y + dy][current.x + dx] = 1;
-            gridColors[current.y + dy][current.x + dx] = current.colorIndex;
-          }
-        })
-      );
-    }
-
-    function drop() {
-      if (
-        canMove(current.shape, current.x, current.y + 1) &&
-        (current.y + shapeHeight(current.shape)) < rows
-      ) {
-        current.y++;
+      let sundayHours = parseFloat(document.getElementById('sun').value);
+      let sundayPay = 0;
+      if (!isNaN(sundayHours) && sundayHours > 0) {
+        sundayPay = sundayHours * wage * 1.5;
       } else {
-        merge();
-        current = randomShape();
-        if (!canMove(current.shape, current.x, current.y)) {
-          alert("Game Over");
-          for (let y = 0; y < rows; y++) {
-            for (let x = 0; x < cols; x++) {
-              grid[y][x] = 0;
-              gridColors[y][x] = 0;
-            }
-          }
-        }
+        sundayHours = 0;
       }
-      draw();
+
+      const totalHours = weeklyHours + sundayHours;
+      const weeklyPay = (cappedRegularHours * wage) + sundayPay;
+      const biweeklyGrossPay = weeklyPay * 2;
+
+      const deductions = 48;
+      const employerContribution = 48;
+
+      const stateTaxRate = parseFloat(document.getElementById('state').value) || 0;
+      const federalTaxRate = document.getElementById('applyFederal').checked ? 0.10 : 0;
+
+      const stateTax = biweeklyGrossPay * stateTaxRate;
+      const federalTax = biweeklyGrossPay * federalTaxRate;
+
+      const biweeklyPay = biweeklyGrossPay - deductions - stateTax - federalTax + employerContribution;
+
+      document.getElementById('result').textContent = `Biweekly Paycheck: $${biweeklyPay.toFixed(2)}`;
+      document.getElementById('totalHours').textContent = `Total Weekly Hours Selected: ${totalHours.toFixed(2)} hrs`;
+      document.getElementById('breakdown').innerHTML = `
+        Gross Pay: $${biweeklyGrossPay.toFixed(2)}<br>
+        Deductions: -$${deductions.toFixed(2)}<br>
+        State Tax: -$${stateTax.toFixed(2)}<br>
+        Federal Tax: -$${federalTax.toFixed(2)}<br>
+        Employer Contribution: +$${employerContribution.toFixed(2)}
+      `;
     }
-
-    setInterval(drop, 600);
-
-    let startX = 0;
-    let startTime = 0;
-    let isTap = false;
-    
-    window.addEventListener("touchstart", e => {
-      if (e.touches.length === 1) {
-        startX = e.touches[0].clientX;
-        startTime = Date.now();
-        isTap = true;
-      }
-    });
-    
-    window.addEventListener("touchmove", e => {
-      if (e.touches.length === 1) {
-        const currentX = e.touches[0].clientX;
-        const deltaX = currentX - startX;
-        
-        // If moved more than 10px, it's considered a swipe, not a tap
-        if (Math.abs(deltaX) > 10) {
-          isTap = false;
-          
-          // Move left or right based on swipe direction
-          const dir = deltaX > 0 ? 1 : -1;
-          if (canMove(current.shape, current.x + dir, current.y)) {
-            current.x += dir;
-            startX = currentX; // Update the start position for continuous movement
-            draw();
-          }
-        }
-      }
-    });
-
-    window.addEventListener("touchend", e => {
-      const timeElapsed = Date.now() - startTime;
-      
-      // If it was a quick tap (less than 300ms) and didn't move much
-      if (isTap && timeElapsed < 300) {
-        tryRotate();
-        draw();
-      }
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft") {
-        if (canMove(current.shape, current.x - 1, current.y)) {
-          current.x--;
-        }
-      } else if (e.key === "ArrowRight") {
-        if (canMove(current.shape, current.x + 1, current.y)) {
-          current.x++;
-        }
-      } else if (e.key === "ArrowUp") {
-        tryRotate();
-      } else if (e.key === "ArrowDown") {
-        drop();
-      }
-      draw();
-    });
-
-    draw();
   </script>
 </body>
 </html>
