@@ -1079,22 +1079,21 @@
                 // Mouse events for cube rotation
                 cube.addEventListener('mousedown', handleMouseDown);
                 
-                // Touch events with better mobile handling
+                // Touch events with better multi-touch handling
                 cube.addEventListener('touchstart', function(e) {
-                    handleMouseDown(e);
-                    // Track tap for face rotation
-                    handleTap(e);
-                }, { passive: false });
-                
-                document.addEventListener('touchmove', function(e) {
-                    if (isDragging) {
-                        handleMouseMove(e);
-                        e.preventDefault(); // Prevent scrolling while dragging
+                    handleTouchStart(e);
+                    // Track tap for face rotation (only for single touches)
+                    if (e.touches.length === 1) {
+                        handleTap(e);
                     }
                 }, { passive: false });
                 
+                document.addEventListener('touchmove', function(e) {
+                    handleTouchMove(e);
+                }, { passive: false });
+                
                 document.addEventListener('touchend', function(e) {
-                    handleMouseUp();
+                    handleTouchEnd(e);
                 });
                 
                 document.addEventListener('mousemove', function(e) {
@@ -1116,6 +1115,12 @@
                     e.preventDefault();
                 });
                 
+                // Add info to help overlay
+                const overlayContent = document.querySelector('.overlay-content');
+                const multiTouchInfo = document.createElement('p');
+                multiTouchInfo.innerHTML = '• <strong>Use two fingers</strong> to swipe on a face to rotate that specific face';
+                overlayContent.appendChild(multiTouchInfo);
+                
                 // Show helpful popup for first-time visitors
                 if (!localStorage.getItem('rubiksCubeVisited')) {
                     setTimeout(() => {
@@ -1130,7 +1135,7 @@
                 // Set initial visible face
                 updateVisibleFace();
                 
-                showDebug("Cube initialized successfully");
+                showDebug("Cube initialized with multi-touch support");
             } catch (error) {
                 console.error("Error during initialization:", error);
                 showDebug("Error during initialization: " + error.message);
