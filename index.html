@@ -178,11 +178,7 @@
         function animate() {
             requestAnimationFrame(animate);
             
-            // Gentle rotation of the entire cube when not interacting
-            if (!isDragging && !animating) {
-                pivot.rotation.y += 0.005;
-                pivot.rotation.x += 0.002;
-            }
+            // No auto-rotation - only rotate when user interacts
             
             renderer.render(scene, camera);
         }
