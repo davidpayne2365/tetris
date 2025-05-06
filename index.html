@@ -201,24 +201,38 @@
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             
-            checkIntersection();
+            const intersectedFace = checkIntersection();
             
-            if (selectedFace) {
+            if (intersectedFace && selectedFace) {
                 isDragging = true;
                 startPoint.copy(currentPoint);
                 document.body.style.cursor = 'grabbing';
+            } else {
+                // Start whole cube rotation if not touching a face
+                touchRotation = true;
+                touchStartX = event.clientX;
+                touchStartY = event.clientY;
             }
-            // No whole cube rotation - only face rotations
         }
         
         // Mouse move handler
         function onMouseMove(event) {
             event.preventDefault();
             
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            
-            if (isDragging && selectedFace) {
+            if (touchRotation) {
+                // Rotate the entire cube
+                const deltaX = (event.clientX - touchStartX) * 0.01;
+                const deltaY = (event.clientY - touchStartY) * 0.01;
+                
+                pivot.rotation.y += deltaX;
+                pivot.rotation.x += deltaY;
+                
+                touchStartX = event.clientX;
+                touchStartY = event.clientY;
+            } else if (isDragging && selectedFace) {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                
                 checkIntersection();
                 handleDrag();
             }
@@ -241,7 +255,7 @@
             event.preventDefault();
             
             if (event.touches.length === 1) {
-                // Single finger touch for face rotation
+                // Single finger touch
                 const touch = event.touches[0];
                 touchStartX = touch.clientX;
                 touchStartY = touch.clientY;
@@ -250,13 +264,15 @@
                 mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
                 
                 // Check if we're touching a face
-                checkIntersection();
+                const intersectedFace = checkIntersection();
                 
-                if (selectedFace) {
+                if (intersectedFace && selectedFace) {
                     isDragging = true;
                     startPoint.copy(currentPoint);
+                } else {
+                    // Start whole cube rotation if not touching a face
+                    touchRotation = true;
                 }
-                // No whole cube rotation - only face rotations
             } else if (event.touches.length === 2) {
                 // Two finger touch for more precise control
                 const touch1 = event.touches[0];
@@ -273,13 +289,15 @@
                 mouse.y = -(midY / window.innerHeight) * 2 + 1;
                 
                 // Check if we're touching a face
-                checkIntersection();
+                const intersectedFace = checkIntersection();
                 
-                if (selectedFace) {
+                if (intersectedFace && selectedFace) {
                     isDragging = true;
                     startPoint.copy(currentPoint);
+                } else {
+                    // Start whole cube rotation if not touching a face
+                    touchRotation = true;
                 }
-                // No whole cube rotation - only face rotations
             }
         }
         
@@ -290,7 +308,17 @@
             if (event.touches.length === 1) {
                 const touch = event.touches[0];
                 
-                if (isDragging && selectedFace) {
+                if (touchRotation) {
+                    // Rotate the entire cube
+                    const deltaX = (touch.clientX - touchStartX) * 0.01;
+                    const deltaY = (touch.clientY - touchStartY) * 0.01;
+                    
+                    pivot.rotation.y += deltaX;
+                    pivot.rotation.x += deltaY;
+                    
+                    touchStartX = touch.clientX;
+                    touchStartY = touch.clientY;
+                } else if (isDragging && selectedFace) {
                     // Rotate a face
                     mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
                     mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
@@ -306,7 +334,17 @@
                 const midX = (touch1.clientX + touch2.clientX) / 2;
                 const midY = (touch1.clientY + touch2.clientY) / 2;
                 
-                if (isDragging && selectedFace) {
+                if (touchRotation) {
+                    // Rotate the entire cube
+                    const deltaX = (midX - touchStartX) * 0.01;
+                    const deltaY = (midY - touchStartY) * 0.01;
+                    
+                    pivot.rotation.y += deltaX;
+                    pivot.rotation.x += deltaY;
+                    
+                    touchStartX = midX;
+                    touchStartY = midY;
+                } else if (isDragging && selectedFace) {
                     // Rotate a face
                     mouse.x = (midX / window.innerWidth) * 2 - 1;
                     mouse.y = -(midY / window.innerHeight) * 2 + 1;
