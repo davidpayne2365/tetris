@@ -43,7 +43,7 @@
             back: 0x0000ff    // blue
         };
         
-        // Initialize the scene
+        // Initialize view to show a nice angle of the cube
         function init() {
             // Create scene
             scene = new THREE.Scene();
@@ -60,6 +60,10 @@
             
             // Create cube
             createCube();
+            
+            // Set initial cube position to show 3 faces
+            pivot.rotation.x = Math.PI / 5;
+            pivot.rotation.y = Math.PI / 4;
             
             // Add event listeners
             window.addEventListener('resize', onWindowResize, false);
@@ -204,6 +208,7 @@
                 startPoint.copy(currentPoint);
                 document.body.style.cursor = 'grabbing';
             }
+            // No whole cube rotation - only face rotations
         }
         
         // Mouse move handler
@@ -226,6 +231,7 @@
             }
             
             isDragging = false;
+            touchRotation = false;
             selectedFace = null;
             document.body.style.cursor = 'auto';
         }
@@ -243,15 +249,14 @@
                 mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
                 mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
                 
+                // Check if we're touching a face
                 checkIntersection();
                 
                 if (selectedFace) {
                     isDragging = true;
                     startPoint.copy(currentPoint);
-                } else {
-                    // Start whole cube rotation
-                    touchRotation = true;
                 }
+                // No whole cube rotation - only face rotations
             } else if (event.touches.length === 2) {
                 // Two finger touch for more precise control
                 const touch1 = event.touches[0];
@@ -267,15 +272,14 @@
                 mouse.x = (midX / window.innerWidth) * 2 - 1;
                 mouse.y = -(midY / window.innerHeight) * 2 + 1;
                 
+                // Check if we're touching a face
                 checkIntersection();
                 
                 if (selectedFace) {
                     isDragging = true;
                     startPoint.copy(currentPoint);
-                } else {
-                    // Start whole cube rotation
-                    touchRotation = true;
                 }
+                // No whole cube rotation - only face rotations
             }
         }
         
@@ -286,17 +290,7 @@
             if (event.touches.length === 1) {
                 const touch = event.touches[0];
                 
-                if (touchRotation) {
-                    // Rotate the entire cube
-                    const deltaX = (touch.clientX - touchStartX) * 0.01;
-                    const deltaY = (touch.clientY - touchStartY) * 0.01;
-                    
-                    pivot.rotation.y += deltaX;
-                    pivot.rotation.x += deltaY;
-                    
-                    touchStartX = touch.clientX;
-                    touchStartY = touch.clientY;
-                } else if (isDragging && selectedFace) {
+                if (isDragging && selectedFace) {
                     // Rotate a face
                     mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
                     mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
@@ -312,17 +306,7 @@
                 const midX = (touch1.clientX + touch2.clientX) / 2;
                 const midY = (touch1.clientY + touch2.clientY) / 2;
                 
-                if (touchRotation) {
-                    // Rotate the entire cube
-                    const deltaX = (midX - touchStartX) * 0.01;
-                    const deltaY = (midY - touchStartY) * 0.01;
-                    
-                    pivot.rotation.y += deltaX;
-                    pivot.rotation.x += deltaY;
-                    
-                    touchStartX = midX;
-                    touchStartY = midY;
-                } else if (isDragging && selectedFace) {
+                if (isDragging && selectedFace) {
                     // Rotate a face
                     mouse.x = (midX / window.innerWidth) * 2 - 1;
                     mouse.y = -(midY / window.innerHeight) * 2 + 1;
@@ -377,7 +361,11 @@
                     // Determine rotation axis
                     determineRotationAxis();
                 }
+                
+                return true;
             }
+            
+            return false;
         }
         
         // Determine rotation axis based on selected face and movement
@@ -393,15 +381,17 @@
             const absZ = Math.abs(normal.z);
             
             if (absX > absY && absX > absZ) {
-                // X is dominant
+                // X axis is dominant
                 rotationAxis = 'x';
             } else if (absY > absX && absY > absZ) {
-                // Y is dominant
+                // Y axis is dominant
                 rotationAxis = 'y';
             } else {
-                // Z is dominant
+                // Z axis is dominant
                 rotationAxis = 'z';
             }
+            
+            console.log("Selected rotation axis:", rotationAxis);
         }
         
         // Handle drag to determine rotation
@@ -409,10 +399,6 @@
             if (!selectedFace || !rotationAxis) return;
             
             const movement = new THREE.Vector3().subVectors(currentPoint, startPoint);
-            
-            // Create a temporary group for rotation
-            const rotationGroup = new THREE.Group();
-            scene.add(rotationGroup);
             
             // Determine which cubelets to rotate based on the position
             const selectedPosition = selectedFace.cubelet.position.clone();
@@ -442,8 +428,8 @@
                     break;
             }
             
-            // For touch, use a smaller threshold to make rotations easier
-            const rotationThreshold = 0.05;
+            // For touch, lower threshold to make rotations easier to trigger
+            const rotationThreshold = 0.02;
             const rotationAmount = movement.length();
             
             if (rotationAmount > rotationThreshold) {
@@ -453,11 +439,10 @@
                 // Animate the rotation
                 animateRotation(layerCubelets, rotationAxis, direction);
                 
-                // Reset starting point to prevent multiple rotations from a single gesture
-                startPoint.copy(currentPoint);
+                // Reset after rotation
+                selectedFace = null;
+                isDragging = false;
             }
-            
-            scene.remove(rotationGroup);
         }
         
         // Determine rotation direction based on movement
@@ -487,79 +472,68 @@
             if (animating) return;
             animating = true;
             
-            // Create rotation group
-            const rotationGroup = new THREE.Group();
+            // Create a temporary rotation group
+            const rotationGroup = new THREE.Object3D();
             scene.add(rotationGroup);
             
-            // Add cubelets to rotation group
+            // Get the world matrix of the cube
+            cube.updateMatrixWorld();
+            const cubeWorldMatrix = cube.matrixWorld.clone();
+            
+            // Add the selected cubelets to the rotation group and update their positions
             cubeletsToRotate.forEach(cubelet => {
-                cube.remove(cubelet);
-                rotationGroup.add(cubelet);
+                // Remove the cubelet from the main cube
+                const originalParent = cubelet.parent;
+                originalParent.remove(cubelet);
                 
-                // Store original world position and quaternion
-                cubelet.userData.worldPosition = cubelet.getWorldPosition(new THREE.Vector3());
-                cubelet.userData.worldQuaternion = cubelet.getWorldQuaternion(new THREE.Quaternion());
+                // Add to rotation group
+                rotationGroup.add(cubelet);
             });
             
             // Set up rotation
             const angle = Math.PI / 2 * direction;
-            const rotationMatrix = new THREE.Matrix4();
             
+            // Determine rotation axis in world space
+            const worldAxis = new THREE.Vector3();
             switch (axis) {
                 case 'x':
-                    rotationMatrix.makeRotationX(angle);
+                    worldAxis.set(1, 0, 0);
                     break;
                 case 'y':
-                    rotationMatrix.makeRotationY(angle);
+                    worldAxis.set(0, 1, 0);
                     break;
                 case 'z':
-                    rotationMatrix.makeRotationZ(angle);
+                    worldAxis.set(0, 0, 1);
                     break;
             }
             
-            // Apply rotation
+            // Apply rotation immediately
+            rotationGroup.rotateOnAxis(worldAxis, angle);
+            
+            // Update the world matrix of the rotation group
             rotationGroup.updateMatrixWorld();
             
-            // Return cubelets to main cube group with new orientation
-            cubeletsToRotate.forEach(cubelet => {
+            // Move cubelets back to the main cube
+            while (rotationGroup.children.length > 0) {
+                const cubelet = rotationGroup.children[0];
                 rotationGroup.remove(cubelet);
                 
-                // Apply rotation to position and quaternion
-                const worldPosition = cubelet.userData.worldPosition.clone();
-                worldPosition.applyMatrix4(rotationMatrix);
+                // Update the cubelet's world position and orientation
+                const worldPosition = new THREE.Vector3();
+                const worldQuaternion = new THREE.Quaternion();
+                cubelet.getWorldPosition(worldPosition);
+                cubelet.getWorldQuaternion(worldQuaternion);
                 
-                const worldQuaternion = cubelet.userData.worldQuaternion.clone();
-                const rotationQuaternion = new THREE.Quaternion();
-                
-                switch (axis) {
-                    case 'x':
-                        rotationQuaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), angle);
-                        break;
-                    case 'y':
-                        rotationQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), angle);
-                        break;
-                    case 'z':
-                        rotationQuaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), angle);
-                        break;
-                }
-                
-                worldQuaternion.multiply(rotationQuaternion);
-                
-                // Convert to local space
-                cube.updateMatrixWorld();
-                const invMatrix = new THREE.Matrix4().copy(cube.matrixWorld).invert();
-                
-                const localPosition = worldPosition.clone().applyMatrix4(invMatrix);
-                cubelet.position.copy(localPosition);
-                
-                // Update rotation
-                const invQuaternion = new THREE.Quaternion().copy(cube.quaternion).invert();
-                const localQuaternion = worldQuaternion.clone().multiply(invQuaternion);
-                cubelet.quaternion.copy(localQuaternion);
-                
+                // Add back to the main cube
                 cube.add(cubelet);
-            });
+                
+                // Set the local position and orientation
+                cubelet.position.copy(worldPosition);
+                cubelet.position.sub(cube.position);
+                cubelet.quaternion.copy(worldQuaternion);
+            }
             
+            // Clean up
             scene.remove(rotationGroup);
             animating = false;
         }
