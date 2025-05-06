@@ -1,246 +1,1054 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Biweekly Paycheck Calculator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      margin: 0;
-      background-color: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    h2 {
-      text-align: center;
-      color: #333;
-    }
-
-    .container {
-      max-width: 500px;
-      width: 100%;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    label {
-      font-weight: bold;
-      margin-top: 10px;
-    }
-
-    input[type="number"], select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 4px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .day {
-      margin-top: 10px;
-    }
-
-    button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    .result {
-      margin-top: 20px;
-      font-weight: bold;
-      font-size: 18px;
-      text-align: center;
-    }
-
-    .breakdown {
-      margin-top: 10px;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .note {
-      margin-top: 10px;
-      text-align: center;
-      font-size: 14px;
-      color: #555;
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        padding: 15px;
-      }
-
-      h2 {
-        font-size: 1.5rem;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rubik's Cube</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            overflow-x: hidden;
+            padding: 10px;
+            touch-action: manipulation;
+        }
+        
+        .scene {
+            width: 100%;
+            max-width: 300px;
+            height: 300px;
+            perspective: 1200px;
+            margin: 20px auto;
+            touch-action: none;
+        }
+        
+        .cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-20deg) rotateY(-20deg);
+            transition: transform 0.2s;
+        }
+        
+        .cube-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            backface-visibility: visible;
+        }
+        
+        .front {
+            transform: translateZ(150px);
+        }
+        
+        .back {
+            transform: rotateY(180deg) translateZ(150px);
+        }
+        
+        .right {
+            transform: rotateY(90deg) translateZ(150px);
+        }
+        
+        .left {
+            transform: rotateY(-90deg) translateZ(150px);
+        }
+        
+        .top {
+            transform: rotateX(90deg) translateZ(150px);
+        }
+        
+        .bottom {
+            transform: rotateX(-90deg) translateZ(150px);
+        }
+        
+        .cubie {
+            position: absolute;
+            width: 33.33%;
+            height: 33.33%;
+            background-color: #1a1a1a;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .sticker {
+            width: 90%;
+            height: 90%;
+            border-radius: 10%;
+        }
+        
+        .red { background-color: #B90000; }
+        .green { background-color: #009B48; }
+        .blue { background-color: #0045AD; }
+        .orange { background-color: #FF5900; }
+        .white { background-color: #FFFFFF; }
+        .yellow { background-color: #FFD500; }
+        
+        .controls {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px;
+        }
+        
+        .move-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        button {
+            padding: 12px;
+            min-width: 50px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            touch-action: manipulation;
+        }
+        
+        button:hover {
+            background: #555;
+        }
+        
+        button:active {
+            background: #777;
+        }
+        
+        .info {
+            text-align: center;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        
+        .info h1 {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        
+        .info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .rotate-controls, .cube-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .cube-controls button {
+            flex: 1;
+            max-width: 150px;
+        }
+        
+        /* Media queries for responsive design */
+        @media (max-width: 480px) {
+            .info h1 {
+                font-size: 20px;
+            }
+            
+            .info p {
+                font-size: 12px;
+            }
+            
+            button {
+                padding: 10px;
+                min-width: 45px;
+                font-size: 14px;
+            }
+            
+            .scene {
+                height: 250px;
+            }
+            
+            .front, .back, .right, .left, .top, .bottom {
+                transform: translateZ(125px);
+            }
+            
+            .back {
+                transform: rotateY(180deg) translateZ(125px);
+            }
+            
+            .right {
+                transform: rotateY(90deg) translateZ(125px);
+            }
+            
+            .left {
+                transform: rotateY(-90deg) translateZ(125px);
+            }
+            
+            .top {
+                transform: rotateX(90deg) translateZ(125px);
+            }
+            
+            .bottom {
+                transform: rotateX(-90deg) translateZ(125px);
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .scene {
+                height: 220px;
+            }
+            
+            .front, .back, .right, .left, .top, .bottom {
+                transform: translateZ(110px);
+            }
+            
+            .back {
+                transform: rotateY(180deg) translateZ(110px);
+            }
+            
+            .right {
+                transform: rotateY(90deg) translateZ(110px);
+            }
+            
+            .left {
+                transform: rotateY(-90deg) translateZ(110px);
+            }
+            
+            .top {
+                transform: rotateX(90deg) translateZ(110px);
+            }
+            
+            .bottom {
+                transform: rotateX(-90deg) translateZ(110px);
+            }
+            
+            button {
+                padding: 8px;
+                min-width: 40px;
+                font-size: 12px;
+            }
+        }
+        
+        /* Instruction overlay */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .overlay.show {
+            display: flex;
+        }
+        
+        .overlay-content {
+            max-width: 500px;
+        }
+        
+        .close-overlay {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #B90000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        /* Help button */
+        .help-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: #333;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Biweekly Paycheck Calculator</h2>
-
-    <label for="wage">Hourly Wage ($):</label>
-    <input type="number" id="wage" step="0.01" min="0" />
-
-    <label for="state">Select Your State:</label>
-    <select id="state">
-      <option value="0">-- Select State --</option>
-      <option value="0.00">Alabama (Non-Licensed)</option>
-      <option value="0.00">Alaska (Non-Licensed)</option>
-      <option value="0.00">Arizona (Non-Licensed)</option>
-      <option value="0.00">Arkansas</option>
-      <option value="0.00">California</option>
-      <option value="0.00">Colorado (Non-Licensed)</option>
-      <option value="0.00">Connecticut</option>
-      <option value="0.00">Delaware</option>
-      <option value="0.00">Florida</option>
-      <option value="0.00">Georgia (Non-Licensed)</option>
-      <option value="0.00">Hawaii</option>
-      <option value="0.00">Idaho (Non-Licensed)</option>
-      <option value="0.00">Illinois</option>
-      <option value="0.00">Indiana (Non-Licensed)</option>
-      <option value="0.00">Iowa</option>
-      <option value="0.00">Kansas (Non-Licensed)</option>
-      <option value="0.00">Kentucky (Non-Licensed)</option>
-      <option value="0.00">Louisiana</option>
-      <option value="0.00">Maine</option>
-      <option value="0.00">Maryland</option>
-      <option value="0.00">Massachusetts</option>
-      <option value="0.00">Michigan</option>
-      <option value="0.00">Minnesota (Non-Licensed)</option>
-      <option value="0.00">Mississippi</option>
-      <option value="0.00">Missouri (Non-Licensed)</option>
-      <option value="0.00">Montana</option>
-      <option value="0.00">Nebraska</option>
-      <option value="0.00">Nevada (Non-Licensed)</option>
-      <option value="0.00">New Hampshire (Non-Licensed)</option>
-      <option value="0.00">New Jersey</option>
-      <option value="0.00">New Mexico (Non-Licensed)</option>
-      <option value="0.00">New York</option>
-      <option value="0.00">North Carolina (Non-Licensed)</option>
-      <option value="0.00">North Dakota</option>
-      <option value="0.00">Ohio</option>
-      <option value="0.00">Oklahoma</option>
-      <option value="0.00">Oregon</option>
-      <option value="0.00">Pennsylvania</option>
-      <option value="0.00">Rhode Island</option>
-      <option value="0.00">South Carolina (Non-Licensed)</option>
-      <option value="0.00">South Dakota (Non-Licensed)</option>
-      <option value="0.00">Tennessee (Non-Licensed)</option>
-      <option value="0.00">Texas (Non-Licensed)</option>
-      <option value="0.00">Utah</option>
-      <option value="0.00">Vermont (Non-Licensed)</option>
-      <option value="0.00">Virginia</option>
-      <option value="0.00">Washington</option>
-      <option value="0.00">West Virginia</option>
-      <option value="0.00">Wisconsin (Non-Licensed)</option>
-      <option value="0.00">Wyoming</option>
-    </select>
-
-    <div class="checkbox-label">
-      <input type="checkbox" id="applyFederal" />
-      <label for="applyFederal">Apply Federal Tax (10%)</label>
+    <div class="info">
+        <h1>Interactive Rubik's Cube</h1>
+        <p>Swipe to rotate the cube. Use buttons below to make moves.</p>
     </div>
 
-    <button onclick="alertNonLicensedStates()">View Non-Licensed States for Opticians</button>
-
-    <div id="week">
-      <div class="day"><label>Monday Hours: <input type="number" id="mon" min="0" /></label></div>
-      <div class="day"><label>Tuesday Hours: <input type="number" id="tue" min="0" /></label></div>
-      <div class="day"><label>Wednesday Hours: <input type="number" id="wed" min="0" /></label></div>
-      <div class="day"><label>Thursday Hours: <input type="number" id="thu" min="0" /></label></div>
-      <div class="day"><label>Friday Hours: <input type="number" id="fri" min="0" /></label></div>
-      <div class="day"><label>Saturday Hours: <input type="number" id="sat" min="0" /></label></div>
-      <div class="day"><label>Sunday Hours: <input type="number" id="sun" min="0" /></label></div>
+    <div class="scene">
+        <div class="cube">
+            <!-- Front face (red) -->
+            <div class="cube-face front" id="front"></div>
+            
+            <!-- Back face (orange) -->
+            <div class="cube-face back" id="back"></div>
+            
+            <!-- Right face (blue) -->
+            <div class="cube-face right" id="right"></div>
+            
+            <!-- Left face (green) -->
+            <div class="cube-face left" id="left"></div>
+            
+            <!-- Top face (white) -->
+            <div class="cube-face top" id="top"></div>
+            
+            <!-- Bottom face (yellow) -->
+            <div class="cube-face bottom" id="bottom"></div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="move-controls">
+            <button id="F">F</button>
+            <button id="F-prime">F'</button>
+            <button id="B">B</button>
+            <button id="B-prime">B'</button>
+            <button id="R">R</button>
+            <button id="R-prime">R'</button>
+            <button id="L">L</button>
+            <button id="L-prime">L'</button>
+            <button id="U">U</button>
+            <button id="U-prime">U'</button>
+            <button id="D">D</button>
+            <button id="D-prime">D'</button>
+        </div>
+        
+        <div class="rotate-controls">
+            <button id="rotate-x">X</button>
+            <button id="rotate-y">Y</button>
+            <button id="rotate-z">Z</button>
+        </div>
+        
+        <div class="cube-controls">
+            <button id="reset">Reset</button>
+            <button id="scramble">Scramble</button>
+        </div>
+    </div>
+    
+    <div class="help-button" id="help-btn">?</div>
+    
+    <div class="overlay" id="instructions-overlay">
+        <div class="overlay-content">
+            <h2>How to Use the Rubik's Cube</h2>
+            <p>• <strong>Swipe</strong> on the cube to rotate it and view all sides</p>
+            <p>• Use the <strong>letter buttons</strong> (F, B, R, L, U, D) to rotate faces:</p>
+            <p>F: Front | B: Back | R: Right | L: Left | U: Up | D: Down</p>
+            <p>• The <strong>'</strong> (prime) means counter-clockwise rotation</p>
+            <p>• <strong>X, Y, Z</strong> buttons rotate the entire cube on that axis</p>
+            <p>• <strong>Reset</strong> returns to solved state</p>
+            <p>• <strong>Scramble</strong> randomly mixes the cube</p>
+        </div>
+        <button class="close-overlay" id="close-instructions">Close</button>
     </div>
 
-    <button onclick="calculatePay()">Calculate Biweekly Paycheck</button>
-    <div class="result" id="result"></div>
-    <div class="result" id="totalHours"></div>
-    <div class="breakdown" id="breakdown"></div>
-  </div>
-
-  <script>
-    function alertNonLicensedStates() {
-      const states = [
-        'Alabama', 'Alaska', 'Arizona', 'Colorado', 'Georgia', 'Idaho',
-        'Indiana', 'Kansas', 'Kentucky', 'Minnesota', 'Missouri', 'Nevada',
-        'New Hampshire', 'New Mexico', 'North Carolina', 'South Carolina',
-        'South Dakota', 'Tennessee', 'Texas', 'Vermont', 'Wisconsin'
-      ];
-      alert("States that do not require a license for opticians:\n\n" + states.join(", "));
-    }
-
-    function calculatePay() {
-      const wage = Math.max(parseFloat(document.getElementById('wage').value) || 0, 0);
-      const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-      let weeklyHours = 0;
-
-      for (let i = 0; i < days.length; i++) {
-        let hours = Math.max(parseFloat(document.getElementById(days[i]).value) || 0, 0);
-        weeklyHours += hours;
-      }
-
-      const cappedRegularHours = Math.min(weeklyHours, 40);
-
-      let sundayHours = parseFloat(document.getElementById('sun').value);
-      let sundayPay = 0;
-      if (!isNaN(sundayHours) && sundayHours > 0) {
-        sundayPay = sundayHours * wage * 1.5;
-      } else {
-        sundayHours = 0;
-      }
-
-      const totalHours = weeklyHours + sundayHours;
-      const weeklyPay = (cappedRegularHours * wage) + sundayPay;
-      const biweeklyGrossPay = weeklyPay * 2;
-
-      const deductions = 48;
-      const employerContribution = 48;
-
-      const stateTaxRate = parseFloat(document.getElementById('state').value) || 0;
-      const federalTaxRate = document.getElementById('applyFederal').checked ? 0.10 : 0;
-
-      const stateTax = biweeklyGrossPay * stateTaxRate;
-      const federalTax = biweeklyGrossPay * federalTaxRate;
-
-      const biweeklyPay = biweeklyGrossPay - deductions - stateTax - federalTax + employerContribution;
-
-      document.getElementById('result').textContent = `Biweekly Paycheck: $${biweeklyPay.toFixed(2)}`;
-      document.getElementById('totalHours').textContent = `Total Weekly Hours Selected: ${totalHours.toFixed(2)} hrs`;
-      document.getElementById('breakdown').innerHTML = `
-        Gross Pay: $${biweeklyGrossPay.toFixed(2)}<br>
-        Deductions: -$${deductions.toFixed(2)}<br>
-        State Tax: -$${stateTax.toFixed(2)}<br>
-        Federal Tax: -$${federalTax.toFixed(2)}<br>
-        Employer Contribution: +$${employerContribution.toFixed(2)}
-      `;
-    }
-  </script>
+    <script>
+        // Define cube state
+        const COLORS = {
+            FRONT: 'red',
+            BACK: 'orange',
+            RIGHT: 'blue',
+            LEFT: 'green',
+            TOP: 'white',
+            BOTTOM: 'yellow',
+            NONE: 'black'
+        };
+        
+        // Initial cube state (solved)
+        let cubeState = {
+            front: Array(9).fill(COLORS.FRONT),
+            back: Array(9).fill(COLORS.BACK),
+            right: Array(9).fill(COLORS.RIGHT),
+            left: Array(9).fill(COLORS.LEFT),
+            top: Array(9).fill(COLORS.TOP),
+            bottom: Array(9).fill(COLORS.BOTTOM)
+        };
+        
+        // Clone the initial state for reset functionality
+        const initialCubeState = JSON.parse(JSON.stringify(cubeState));
+        
+        // DOM elements
+        const cube = document.querySelector('.cube');
+        const faces = {
+            front: document.getElementById('front'),
+            back: document.getElementById('back'),
+            right: document.getElementById('right'),
+            left: document.getElementById('left'),
+            top: document.getElementById('top'),
+            bottom: document.getElementById('bottom')
+        };
+        
+        // Instruction overlay
+        const helpBtn = document.getElementById('help-btn');
+        const instructionsOverlay = document.getElementById('instructions-overlay');
+        const closeInstructions = document.getElementById('close-instructions');
+        
+        helpBtn.addEventListener('click', () => {
+            instructionsOverlay.classList.add('show');
+        });
+        
+        closeInstructions.addEventListener('click', () => {
+            instructionsOverlay.classList.remove('show');
+        });
+        
+        // Get scene dimensions for responsive sizing
+        const scene = document.querySelector('.scene');
+        const getSceneSize = () => {
+            return {
+                width: scene.clientWidth,
+                height: scene.clientHeight
+            };
+        };
+        
+        // Rotation state
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let cubeRotation = { x: -20, y: -20 };
+        
+        // Render cube with responsive cubies
+        function renderCube() {
+            // Clear all faces
+            for (const face in faces) {
+                faces[face].innerHTML = '';
+            }
+            
+            // Get current scene size
+            const sceneSize = getSceneSize();
+            const cubieSize = sceneSize.width / 3;
+            
+            // Render each face
+            for (const face in cubeState) {
+                const faceEl = faces[face];
+                
+                cubeState[face].forEach((color, i) => {
+                    const row = Math.floor(i / 3);
+                    const col = i % 3;
+                    
+                    const cubie = document.createElement('div');
+                    cubie.className = 'cubie';
+                    cubie.style.top = (row * 33.33) + '%';
+                    cubie.style.left = (col * 33.33) + '%';
+                    
+                    const sticker = document.createElement('div');
+                    sticker.className = `sticker ${color}`;
+                    cubie.appendChild(sticker);
+                    
+                    faceEl.appendChild(cubie);
+                });
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            renderCube();
+        });
+        
+        // Functions to handle mouse/touch events for cube rotation
+        function handleMouseDown(e) {
+            isDragging = true;
+            
+            // Determine if it's a touch or mouse event
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            
+            previousMousePosition = {
+                x: clientX,
+                y: clientY
+            };
+            
+            // Prevent default behavior only for touch events to avoid scrolling
+            if (e.type.includes('touch')) {
+                e.preventDefault();
+            }
+        }
+        
+        function handleMouseMove(e) {
+            if (!isDragging) return;
+            
+            // Determine if it's a touch or mouse event
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            
+            const dx = clientX - previousMousePosition.x;
+            const dy = clientY - previousMousePosition.y;
+            
+            // Adjust rotation speed based on screen size
+            const rotationSpeed = window.innerWidth < 480 ? 0.7 : 0.5;
+            
+            cubeRotation.x -= dy * rotationSpeed;
+            cubeRotation.y += dx * rotationSpeed;
+            
+            updateCubeRotation();
+            
+            previousMousePosition = {
+                x: clientX,
+                y: clientY
+            };
+            
+            // Prevent default behavior only for touch events to avoid scrolling
+            if (e.type.includes('touch')) {
+                e.preventDefault();
+            }
+        }
+        
+        function handleMouseUp() {
+            isDragging = false;
+        }
+        
+        function updateCubeRotation() {
+            cube.style.transform = `rotateX(${cubeRotation.x}deg) rotateY(${cubeRotation.y}deg)`;
+        }
+        
+        // Cube moves
+        function rotateFace(face, clockwise = true) {
+            // Clone the face to avoid modifying during rotation
+            const faceCopy = [...cubeState[face]];
+            
+            // Rotate the stickers on the face
+            if (clockwise) {
+                // Rotate corners clockwise
+                cubeState[face][0] = faceCopy[6];
+                cubeState[face][2] = faceCopy[0];
+                cubeState[face][8] = faceCopy[2];
+                cubeState[face][6] = faceCopy[8];
+                
+                // Rotate edges clockwise
+                cubeState[face][1] = faceCopy[3];
+                cubeState[face][5] = faceCopy[1];
+                cubeState[face][7] = faceCopy[5];
+                cubeState[face][3] = faceCopy[7];
+            } else {
+                // Rotate corners counter-clockwise
+                cubeState[face][0] = faceCopy[2];
+                cubeState[face][2] = faceCopy[8];
+                cubeState[face][8] = faceCopy[6];
+                cubeState[face][6] = faceCopy[0];
+                
+                // Rotate edges counter-clockwise
+                cubeState[face][1] = faceCopy[5];
+                cubeState[face][5] = faceCopy[7];
+                cubeState[face][7] = faceCopy[3];
+                cubeState[face][3] = faceCopy[1];
+            }
+        }
+        
+        // Implementing each standard move
+        function moveF(prime = false) {
+            rotateFace('front', !prime);
+            
+            // Save the affected edge pieces
+            const topRow = [cubeState.top[6], cubeState.top[7], cubeState.top[8]];
+            
+            if (!prime) {
+                // Clockwise: top -> right -> bottom -> left -> top
+                cubeState.top[6] = cubeState.left[8];
+                cubeState.top[7] = cubeState.left[5];
+                cubeState.top[8] = cubeState.left[2];
+                
+                cubeState.left[2] = cubeState.bottom[0];
+                cubeState.left[5] = cubeState.bottom[1];
+                cubeState.left[8] = cubeState.bottom[2];
+                
+                cubeState.bottom[0] = cubeState.right[6];
+                cubeState.bottom[1] = cubeState.right[3];
+                cubeState.bottom[2] = cubeState.right[0];
+                
+                cubeState.right[0] = topRow[0];
+                cubeState.right[3] = topRow[1];
+                cubeState.right[6] = topRow[2];
+            } else {
+                // Counter-clockwise: top -> left -> bottom -> right -> top
+                cubeState.top[6] = cubeState.right[0];
+                cubeState.top[7] = cubeState.right[3];
+                cubeState.top[8] = cubeState.right[6];
+                
+                cubeState.right[0] = cubeState.bottom[2];
+                cubeState.right[3] = cubeState.bottom[1];
+                cubeState.right[6] = cubeState.bottom[0];
+                
+                cubeState.bottom[0] = cubeState.left[2];
+                cubeState.bottom[1] = cubeState.left[5];
+                cubeState.bottom[2] = cubeState.left[8];
+                
+                cubeState.left[2] = topRow[8];
+                cubeState.left[5] = topRow[7];
+                cubeState.left[8] = topRow[6];
+            }
+            
+            renderCube();
+        }
+        
+        function moveB(prime = false) {
+            rotateFace('back', !prime);
+            
+            // Save the affected edge pieces
+            const topRow = [cubeState.top[0], cubeState.top[1], cubeState.top[2]];
+            
+            if (!prime) {
+                // Clockwise: top -> left -> bottom -> right -> top
+                cubeState.top[0] = cubeState.right[2];
+                cubeState.top[1] = cubeState.right[5];
+                cubeState.top[2] = cubeState.right[8];
+                
+                cubeState.right[2] = cubeState.bottom[8];
+                cubeState.right[5] = cubeState.bottom[7];
+                cubeState.right[8] = cubeState.bottom[6];
+                
+                cubeState.bottom[6] = cubeState.left[0];
+                cubeState.bottom[7] = cubeState.left[3];
+                cubeState.bottom[8] = cubeState.left[6];
+                
+                cubeState.left[0] = topRow[2];
+                cubeState.left[3] = topRow[1];
+                cubeState.left[6] = topRow[0];
+            } else {
+                // Counter-clockwise: top -> right -> bottom -> left -> top
+                cubeState.top[0] = cubeState.left[6];
+                cubeState.top[1] = cubeState.left[3];
+                cubeState.top[2] = cubeState.left[0];
+                
+                cubeState.left[0] = cubeState.bottom[8];
+                cubeState.left[3] = cubeState.bottom[7];
+                cubeState.left[6] = cubeState.bottom[6];
+                
+                cubeState.bottom[6] = cubeState.right[8];
+                cubeState.bottom[7] = cubeState.right[5];
+                cubeState.bottom[8] = cubeState.right[2];
+                
+                cubeState.right[2] = topRow[0];
+                cubeState.right[5] = topRow[1];
+                cubeState.right[8] = topRow[2];
+            }
+            
+            renderCube();
+        }
+        
+        function moveR(prime = false) {
+            rotateFace('right', !prime);
+            
+            // Save the affected edge pieces
+            const frontCol = [cubeState.front[2], cubeState.front[5], cubeState.front[8]];
+            
+            if (!prime) {
+                // Clockwise: front -> top -> back -> bottom -> front
+                cubeState.front[2] = cubeState.bottom[2];
+                cubeState.front[5] = cubeState.bottom[5];
+                cubeState.front[8] = cubeState.bottom[8];
+                
+                cubeState.bottom[2] = cubeState.back[6];
+                cubeState.bottom[5] = cubeState.back[3];
+                cubeState.bottom[8] = cubeState.back[0];
+                
+                cubeState.back[0] = cubeState.top[8];
+                cubeState.back[3] = cubeState.top[5];
+                cubeState.back[6] = cubeState.top[2];
+                
+                cubeState.top[2] = frontCol[0];
+                cubeState.top[5] = frontCol[1];
+                cubeState.top[8] = frontCol[2];
+            } else {
+                // Counter-clockwise: front -> bottom -> back -> top -> front
+                cubeState.front[2] = cubeState.top[2];
+                cubeState.front[5] = cubeState.top[5];
+                cubeState.front[8] = cubeState.top[8];
+                
+                cubeState.top[2] = cubeState.back[6];
+                cubeState.top[5] = cubeState.back[3];
+                cubeState.top[8] = cubeState.back[0];
+                
+                cubeState.back[0] = cubeState.bottom[8];
+                cubeState.back[3] = cubeState.bottom[5];
+                cubeState.back[6] = cubeState.bottom[2];
+                
+                cubeState.bottom[2] = frontCol[0];
+                cubeState.bottom[5] = frontCol[1];
+                cubeState.bottom[8] = frontCol[2];
+            }
+            
+            renderCube();
+        }
+        
+        function moveL(prime = false) {
+            rotateFace('left', !prime);
+            
+            // Save the affected edge pieces
+            const frontCol = [cubeState.front[0], cubeState.front[3], cubeState.front[6]];
+            
+            if (!prime) {
+                // Clockwise: front -> bottom -> back -> top -> front
+                cubeState.front[0] = cubeState.top[0];
+                cubeState.front[3] = cubeState.top[3];
+                cubeState.front[6] = cubeState.top[6];
+                
+                cubeState.top[0] = cubeState.back[8];
+                cubeState.top[3] = cubeState.back[5];
+                cubeState.top[6] = cubeState.back[2];
+                
+                cubeState.back[2] = cubeState.bottom[6];
+                cubeState.back[5] = cubeState.bottom[3];
+                cubeState.back[8] = cubeState.bottom[0];
+                
+                cubeState.bottom[0] = frontCol[0];
+                cubeState.bottom[3] = frontCol[1];
+                cubeState.bottom[6] = frontCol[2];
+            } else {
+                // Counter-clockwise: front -> top -> back -> bottom -> front
+                cubeState.front[0] = cubeState.bottom[0];
+                cubeState.front[3] = cubeState.bottom[3];
+                cubeState.front[6] = cubeState.bottom[6];
+                
+                cubeState.bottom[0] = cubeState.back[8];
+                cubeState.bottom[3] = cubeState.back[5];
+                cubeState.bottom[6] = cubeState.back[2];
+                
+                cubeState.back[2] = cubeState.top[6];
+                cubeState.back[5] = cubeState.top[3];
+                cubeState.back[8] = cubeState.top[0];
+                
+                cubeState.top[0] = frontCol[0];
+                cubeState.top[3] = frontCol[1];
+                cubeState.top[6] = frontCol[2];
+            }
+            
+            renderCube();
+        }
+        
+        function moveU(prime = false) {
+            rotateFace('top', !prime);
+            
+            // Save the affected edge pieces
+            const frontRow = [cubeState.front[0], cubeState.front[1], cubeState.front[2]];
+            
+            if (!prime) {
+                // Clockwise: front -> right -> back -> left -> front
+                cubeState.front[0] = cubeState.left[0];
+                cubeState.front[1] = cubeState.left[1];
+                cubeState.front[2] = cubeState.left[2];
+                
+                cubeState.left[0] = cubeState.back[0];
+                cubeState.left[1] = cubeState.back[1];
+                cubeState.left[2] = cubeState.back[2];
+                
+                cubeState.back[0] = cubeState.right[0];
+                cubeState.back[1] = cubeState.right[1];
+                cubeState.back[2] = cubeState.right[2];
+                
+                cubeState.right[0] = frontRow[0];
+                cubeState.right[1] = frontRow[1];
+                cubeState.right[2] = frontRow[2];
+            } else {
+                // Counter-clockwise: front -> left -> back -> right -> front
+                cubeState.front[0] = cubeState.right[0];
+                cubeState.front[1] = cubeState.right[1];
+                cubeState.front[2] = cubeState.right[2];
+                
+                cubeState.right[0] = cubeState.back[0];
+                cubeState.right[1] = cubeState.back[1];
+                cubeState.right[2] = cubeState.back[2];
+                
+                cubeState.back[0] = cubeState.left[0];
+                cubeState.back[1] = cubeState.left[1];
+                cubeState.back[2] = cubeState.left[2];
+                
+                cubeState.left[0] = frontRow[0];
+                cubeState.left[1] = frontRow[1];
+                cubeState.left[2] = frontRow[2];
+            }
+            
+            renderCube();
+        }
+        
+        function moveD(prime = false) {
+            rotateFace('bottom', !prime);
+            
+            // Save the affected edge pieces
+            const frontRow = [cubeState.front[6], cubeState.front[7], cubeState.front[8]];
+            
+            if (!prime) {
+                // Clockwise: front -> left -> back -> right -> front
+                cubeState.front[6] = cubeState.right[6];
+                cubeState.front[7] = cubeState.right[7];
+                cubeState.front[8] = cubeState.right[8];
+                
+                cubeState.right[6] = cubeState.back[6];
+                cubeState.right[7] = cubeState.back[7];
+                cubeState.right[8] = cubeState.back[8];
+                
+                cubeState.back[6] = cubeState.left[6];
+                cubeState.back[7] = cubeState.left[7];
+                cubeState.back[8] = cubeState.left[8];
+                
+                cubeState.left[6] = frontRow[0];
+                cubeState.left[7] = frontRow[1];
+                cubeState.left[8] = frontRow[2];
+            }
+            
+            renderCube();
+        }
+        
+        // Rotate the entire cube
+        function rotateX() {
+            // Save current state
+            const top = [...cubeState.top];
+            const back = [...cubeState.back];
+            const bottom = [...cubeState.bottom];
+            const front = [...cubeState.front];
+            
+            // Rotate the cube on X axis
+            // top -> front -> bottom -> back -> top
+            cubeState.front = top;
+            cubeState.bottom = front;
+            
+            // Need to rotate back face 180 degrees when moving it to top
+            cubeState.top = [...back].reverse();
+            
+            // Need to rotate bottom face 180 degrees when moving it to back
+            cubeState.back = [...bottom].reverse();
+            
+            // Rotate right face counterclockwise
+            rotateFace('right', false);
+            
+            // Rotate left face clockwise
+            rotateFace('left', true);
+            
+            renderCube();
+        }
+        
+        function rotateY() {
+            // Save current state
+            const front = [...cubeState.front];
+            const right = [...cubeState.right];
+            const back = [...cubeState.back];
+            const left = [...cubeState.left];
+            
+            // Rotate the cube on Y axis
+            // front -> right -> back -> left -> front
+            cubeState.right = front;
+            cubeState.back = right;
+            cubeState.left = back;
+            cubeState.front = left;
+            
+            // Rotate top face clockwise
+            rotateFace('top', true);
+            
+            // Rotate bottom face counterclockwise
+            rotateFace('bottom', false);
+            
+            renderCube();
+        }
+        
+        function rotateZ() {
+            // Save current state
+            const top = [...cubeState.top];
+            const right = [...cubeState.right];
+            const bottom = [...cubeState.bottom];
+            const left = [...cubeState.left];
+            
+            // Create new arrays to hold rotated pieces
+            let newTop = Array(9).fill(null);
+            let newRight = Array(9).fill(null);
+            let newBottom = Array(9).fill(null);
+            let newLeft = Array(9).fill(null);
+            
+            // Rotate top
+            newTop[0] = top[6]; newTop[1] = top[3]; newTop[2] = top[0];
+            newTop[3] = top[7]; newTop[4] = top[4]; newTop[5] = top[1];
+            newTop[6] = top[8]; newTop[7] = top[5]; newTop[8] = top[2];
+            
+            // Rotate right
+            newRight[0] = right[6]; newRight[1] = right[3]; newRight[2] = right[0];
+            newRight[3] = right[7]; newRight[4] = right[4]; newRight[5] = right[1];
+            newRight[6] = right[8]; newRight[7] = right[5]; newRight[8] = right[2];
+            
+            // Rotate bottom
+            newBottom[0] = bottom[6]; newBottom[1] = bottom[3]; newBottom[2] = bottom[0];
+            newBottom[3] = bottom[7]; newBottom[4] = bottom[4]; newBottom[5] = bottom[1];
+            newBottom[6] = bottom[8]; newBottom[7] = bottom[5]; newBottom[8] = bottom[2];
+            
+            // Rotate left
+            newLeft[0] = left[6]; newLeft[1] = left[3]; newLeft[2] = left[0];
+            newLeft[3] = left[7]; newLeft[4] = left[4]; newLeft[5] = left[1];
+            newLeft[6] = left[8]; newLeft[7] = left[5]; newLeft[8] = left[2];
+            
+            // Update the state
+            cubeState.top = newTop;
+            cubeState.right = newRight;
+            cubeState.bottom = newBottom;
+            cubeState.left = newLeft;
+            
+            // Rotate front face clockwise
+            rotateFace('front', true);
+            
+            // Rotate back face counterclockwise
+            rotateFace('back', false);
+            
+            renderCube();
+        }
+        
+        // Reset cube
+        function resetCube() {
+            cubeState = JSON.parse(JSON.stringify(initialCubeState));
+            renderCube();
+        }
+        
+        // Scramble the cube
+        function scrambleCube() {
+            const moves = ['F', 'F\'', 'B', 'B\'', 'R', 'R\'', 'L', 'L\'', 'U', 'U\'', 'D', 'D\''];
+            const numMoves = 20;
+            
+            for (let i = 0; i < numMoves; i++) {
+                const randomMove = moves[Math.floor(Math.random() * moves.length)];
+                
+                switch (randomMove) {
+                    case 'F': moveF(); break;
+                    case 'F\'': moveF(true); break;
+                    case 'B': moveB(); break;
+                    case 'B\'': moveB(true); break;
+                    case 'R': moveR(); break;
+                    case 'R\'': moveR(true); break;
+                    case 'L': moveL(); break;
+                    case 'L\'': moveL(true); break;
+                    case 'U': moveU(); break;
+                    case 'U\'': moveU(true); break;
+                    case 'D': moveD(); break;
+                    case 'D\'': moveD(true); break;
+                }
+            }
+        }
+        
+        // Attach event listeners for button moves
+        document.getElementById('F').addEventListener('click', () => moveF());
+        document.getElementById('F-prime').addEventListener('click', () => moveF(true));
+        document.getElementById('B').addEventListener('click', () => moveB());
+        document.getElementById('B-prime').addEventListener('click', () => moveB(true));
+        document.getElementById('R').addEventListener('click', () => moveR());
+        document.getElementById('R-prime').addEventListener('click', () => moveR(true));
+        document.getElementById('L').addEventListener('click', () => moveL());
+        document.getElementById('L-prime').addEventListener('click', () => moveL(true));
+        document.getElementById('U').addEventListener('click', () => moveU());
+        document.getElementById('U-prime').addEventListener('click', () => moveU(true));
+        document.getElementById('D').addEventListener('click', () => moveD());
+        document.getElementById('D-prime').addEventListener('click', () => moveD(true));
+        
+        // Attach event listeners for cube controls
+        document.getElementById('rotate-x').addEventListener('click', rotateX);
+        document.getElementById('rotate-y').addEventListener('click', rotateY);
+        document.getElementById('rotate-z').addEventListener('click', rotateZ);
+        document.getElementById('reset').addEventListener('click', resetCube);
+        document.getElementById('scramble').addEventListener('click', scrambleCube);
+        
+        // Better touch/mouse handling with passive event listeners where appropriate
+        // Mouse events
+        cube.addEventListener('mousedown', handleMouseDown);
+        
+        // Touch events with better mobile handling
+        cube.addEventListener('touchstart', function(e) {
+            handleMouseDown(e);
+        }, { passive: false });
+        
+        document.addEventListener('touchmove', function(e) {
+            if (isDragging) {
+                handleMouseMove(e);
+                e.preventDefault(); // Prevent scrolling while dragging
+            }
+        }, { passive: false });
+        
+        document.addEventListener('touchend', function() {
+            handleMouseUp();
+        });
+        
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                handleMouseMove(e);
+            }
+        });
+        
+        document.addEventListener('mouseup', function() {
+            handleMouseUp();
+        });
+        
+        // Add double-tap detection for mobile to reset view
+        let lastTap = 0;
+        cube.addEventListener('touchend', function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            
+            if (tapLength < 300 && tapLength > 0) {
+                // Double tap detected
+                cubeRotation = { x: -20, y: -20 };
+                updateCubeRotation();
+                e.preventDefault();
+            }
+            
+            lastTap = currentTime;
+        });
+        
+        // Detect mobile device for optimizations
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // Apply mobile-specific adjustments
+        if (isMobile) {
+            // Adjust initial rotation for better mobile viewing
+            cubeRotation = { x: -30, y: -30 };
+            updateCubeRotation();
+            
+            // Show initial help for mobile users
+            setTimeout(() => {
+                instructionsOverlay.classList.add('show');
+            }, 1000);
+        }
+        
+        // Prevent zoom on double tap for iOS (specific fix)
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        
+        // Show helpful popup for first-time visitors
+        if (!localStorage.getItem('rubiksCubeVisited')) {
+            setTimeout(() => {
+                instructionsOverlay.classList.add('show');
+                localStorage.setItem('rubiksCubeVisited', 'true');
+            }, 1000);
+        }
+        
+        // Initialize the cube
+        renderCube();
+    </script>
 </body>
 </html>
