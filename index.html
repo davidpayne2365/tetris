@@ -1,1153 +1,499 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rubik's Cube</title>
+    <title>Gesture-Controlled Rubik's Cube</title>
     <style>
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
         body {
             margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            perspective: 1000px;
+            overflow: hidden;
             background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-            overflow-x: hidden;
-            padding: 10px;
-            touch-action: manipulation;
         }
-        
-        .scene {
-            width: 90vw;
-            max-width: 300px;
-            height: 300px;
-            perspective: 1200px;
-            margin: 20px auto;
-            touch-action: none;
-        }
-        
-        .cube {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-            transform: rotateX(-20deg) rotateY(-20deg);
-            transition: transform 0.2s;
-        }
-        
-        .cube-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            backface-visibility: visible;
-        }
-        
-        .front {
-            transform: translateZ(150px);
-        }
-        
-        .back {
-            transform: rotateY(180deg) translateZ(150px);
-        }
-        
-        .right {
-            transform: rotateY(90deg) translateZ(150px);
-        }
-        
-        .left {
-            transform: rotateY(-90deg) translateZ(150px);
-        }
-        
-        .top {
-            transform: rotateX(90deg) translateZ(150px);
-        }
-        
-        .bottom {
-            transform: rotateX(-90deg) translateZ(150px);
-        }
-        
-        .cubie {
-            position: absolute;
-            width: 33.33%;
-            height: 33.33%;
-            background-color: #1a1a1a;
-            border: 1px solid #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .sticker {
-            width: 90%;
-            height: 90%;
-            border-radius: 10%;
-        }
-        
-        .red { background-color: #B90000; }
-        .green { background-color: #009B48; }
-        .blue { background-color: #0045AD; }
-        .orange { background-color: #FF5900; }
-        .white { background-color: #FFFFFF; }
-        .yellow { background-color: #FFD500; }
-        
-        .info {
-            text-align: center;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-        
-        .info h1 {
-            font-size: 24px;
-            margin: 10px 0;
-        }
-        
-        .info p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-        
-        /* Reset and scramble buttons as floating elements */
-        .floating-controls {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 100;
-        }
-        
-        .floating-button {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #333;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            cursor: pointer;
-            border: none;
-            font-size: 24px;
-        }
-        
-        .floating-button:active {
-            transform: scale(0.95);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        /* Media queries for responsive design */
-        @media (max-width: 480px) {
-            .info h1 {
-                font-size: 20px;
-            }
-            
-            .info p {
-                font-size: 12px;
-            }
-            
-            .scene {
-                height: 250px;
-            }
-            
-            .front, .back, .right, .left, .top, .bottom {
-                transform: translateZ(125px);
-            }
-            
-            .back {
-                transform: rotateY(180deg) translateZ(125px);
-            }
-            
-            .right {
-                transform: rotateY(90deg) translateZ(125px);
-            }
-            
-            .left {
-                transform: rotateY(-90deg) translateZ(125px);
-            }
-            
-            .top {
-                transform: rotateX(90deg) translateZ(125px);
-            }
-            
-            .bottom {
-                transform: rotateX(-90deg) translateZ(125px);
-            }
-        }
-        
-        @media (max-width: 360px) {
-            .scene {
-                height: 220px;
-            }
-            
-            .front, .back, .right, .left, .top, .bottom {
-                transform: translateZ(110px);
-            }
-            
-            .back {
-                transform: rotateY(180deg) translateZ(110px);
-            }
-            
-            .right {
-                transform: rotateY(90deg) translateZ(110px);
-            }
-            
-            .left {
-                transform: rotateY(-90deg) translateZ(110px);
-            }
-            
-            .top {
-                transform: rotateX(90deg) translateZ(110px);
-            }
-            
-            .bottom {
-                transform: rotateX(-90deg) translateZ(110px);
-            }
-        }
-        
-        /* Instruction overlay */
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .overlay.show {
-            display: flex;
-        }
-        
-        .overlay-content {
-            max-width: 500px;
-        }
-        
-        .close-overlay {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #B90000;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        
-        /* Help button */
-        .help-button {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 40px;
-            height: 40px;
-            background: #333;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 20px;
-            cursor: pointer;
-            z-index: 100;
-        }
-
-        /* Debug panel */
-        .debug-panel {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            z-index: 999;
-            display: none;
+        canvas {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="info">
-        <h1>Interactive Rubik's Cube</h1>
-        <p>Swipe to rotate the cube. Double-tap to turn a face.</p>
-    </div>
-
-    <div class="scene">
-        <div class="cube">
-            <!-- Front face (red) -->
-            <div class="cube-face front" id="front"></div>
-            
-            <!-- Back face (orange) -->
-            <div class="cube-face back" id="back"></div>
-            
-            <!-- Right face (blue) -->
-            <div class="cube-face right" id="right"></div>
-            
-            <!-- Left face (green) -->
-            <div class="cube-face left" id="left"></div>
-            
-            <!-- Top face (white) -->
-            <div class="cube-face top" id="top"></div>
-            
-            <!-- Bottom face (yellow) -->
-            <div class="cube-face bottom" id="bottom"></div>
-        </div>
-    </div>
-    
-    <div class="floating-controls">
-        <button class="floating-button" id="reset">↺</button>
-        <button class="floating-button" id="scramble">🔀</button>
-    </div>
-    
-    <div class="help-button" id="help-btn">?</div>
-
-    <div class="debug-panel" id="debug-panel">Cube Status: OK</div>
-    
-    <div class="overlay" id="instructions-overlay">
-        <div class="overlay-content">
-            <h2>How to Use the Gesture-Based Rubik's Cube</h2>
-            <p>• <strong>Swipe</strong> on the cube to rotate it and view all sides</p>
-            <p>• <strong>Double tap</strong> on a face to rotate it clockwise</p>
-            <p>• <strong>Triple tap</strong> on a face to rotate it counter-clockwise</p>
-            <p>• Press the <strong>↺</strong> button to reset the cube to solved state</p>
-            <p>• Press the <strong>🔀</strong> button to scramble the cube</p>
-        </div>
-        <button class="close-overlay" id="close-instructions">Close</button>
-    </div>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Define cube state
-        const COLORS = {
-            FRONT: 'red',
-            BACK: 'orange',
-            RIGHT: 'blue',
-            LEFT: 'green',
-            TOP: 'white',
-            BOTTOM: 'yellow',
-            NONE: 'black'
-        };
-        
-        // Debug elements
-        const debugPanel = document.getElementById('debug-panel');
-        
-        // Function to show debug info
-        function showDebug(message) {
-            debugPanel.textContent = message;
-            debugPanel.style.display = 'block';
-            setTimeout(() => {
-                debugPanel.style.display = 'none';
-            }, 3000);
-        }
-        
-        // Initial cube state (solved)
-        let cubeState = {
-            front: Array(9).fill(COLORS.FRONT),
-            back: Array(9).fill(COLORS.BACK),
-            right: Array(9).fill(COLORS.RIGHT),
-            left: Array(9).fill(COLORS.LEFT),
-            top: Array(9).fill(COLORS.TOP),
-            bottom: Array(9).fill(COLORS.BOTTOM)
-        };
-        
-        // Clone the initial state for reset functionality
-        const initialCubeState = JSON.parse(JSON.stringify(cubeState));
-        
-        // DOM elements
-        const cube = document.querySelector('.cube');
-        const faces = {
-            front: document.getElementById('front'),
-            back: document.getElementById('back'),
-            right: document.getElementById('right'),
-            left: document.getElementById('left'),
-            top: document.getElementById('top'),
-            bottom: document.getElementById('bottom')
-        };
-        
-        // Instruction overlay
-        const helpBtn = document.getElementById('help-btn');
-        const instructionsOverlay = document.getElementById('instructions-overlay');
-        const closeInstructions = document.getElementById('close-instructions');
-        
-        helpBtn.addEventListener('click', () => {
-            instructionsOverlay.classList.add('show');
-        });
-        
-        closeInstructions.addEventListener('click', () => {
-            instructionsOverlay.classList.remove('show');
-        });
-        
-        // Rotation state
+        // Main variables
+        let scene, camera, renderer;
+        let cube, pivot;
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
         let isDragging = false;
-        let previousMousePosition = { x: 0, y: 0 };
-        let cubeRotation = { x: -20, y: -20 };
+        let startPoint = new THREE.Vector3();
+        let currentPoint = new THREE.Vector3();
+        let selectedFace = null;
+        let rotationAxis = null;
+        let cubeSize = 3;
+        let cubelets = [];
+        let animating = false;
         
-        // Add a lock to prevent multiple moves being executed simultaneously
-        let isMoving = false;
+        // Colors for the cube faces
+        const colors = {
+            up: 0xffffff,     // white
+            down: 0xffff00,   // yellow
+            right: 0xff0000,  // red
+            left: 0xffa500,   // orange
+            front: 0x00ff00,  // green
+            back: 0x0000ff    // blue
+        };
         
-        // Track current visible face for gestures
-        let visibleFace = 'front';
+        // Initialize the scene
+        function init() {
+            // Create scene
+            scene = new THREE.Scene();
+            
+            // Create camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 7;
+            
+            // Create renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0xf0f0f0);
+            document.body.appendChild(renderer.domElement);
+            
+            // Create cube
+            createCube();
+            
+            // Add event listeners
+            window.addEventListener('resize', onWindowResize, false);
+            renderer.domElement.addEventListener('mousedown', onMouseDown, false);
+            renderer.domElement.addEventListener('mousemove', onMouseMove, false);
+            renderer.domElement.addEventListener('mouseup', onMouseUp, false);
+            renderer.domElement.addEventListener('touchstart', onTouchStart, false);
+            renderer.domElement.addEventListener('touchmove', onTouchMove, false);
+            renderer.domElement.addEventListener('touchend', onTouchEnd, false);
+            
+            // Start animation loop
+            animate();
+        }
         
-        // Render cube with responsive cubies
-        function renderCube() {
-            try {
-                // Clear all faces
-                for (const face in faces) {
-                    if (faces[face]) {
-                        faces[face].innerHTML = '';
-                    } else {
-                        console.error(`Face element '${face}' not found.`);
-                        continue;
+        // Create the Rubik's Cube
+        function createCube() {
+            pivot = new THREE.Group();
+            scene.add(pivot);
+            
+            cube = new THREE.Group();
+            pivot.add(cube);
+            
+            // Size of each cubelet
+            const size = 1;
+            const gap = 0.05;
+            
+            // Create cubelets
+            for (let x = 0; x < cubeSize; x++) {
+                for (let y = 0; y < cubeSize; y++) {
+                    for (let z = 0; z < cubeSize; z++) {
+                        // Skip the internal cube
+                        if (x > 0 && x < cubeSize - 1 &&
+                            y > 0 && y < cubeSize - 1 &&
+                            z > 0 && z < cubeSize - 1) continue;
+                            
+                        const cubelet = createCubelet(size);
+                        
+                        // Position the cubelet
+                        cubelet.position.set(
+                            (x - Math.floor(cubeSize/2)) * (size + gap),
+                            (y - Math.floor(cubeSize/2)) * (size + gap),
+                            (z - Math.floor(cubeSize/2)) * (size + gap)
+                        );
+                        
+                        // Store position data
+                        cubelet.userData = {
+                            originalPosition: cubelet.position.clone(),
+                            currentPosition: [x, y, z],
+                            faceColors: []
+                        };
+                        
+                        cubelets.push(cubelet);
+                        cube.add(cubelet);
                     }
+                }
+            }
+            
+            colorCube();
+        }
+        
+        // Create a single cubelet
+        function createCubelet(size) {
+            const geometry = new THREE.BoxGeometry(size, size, size);
+            const materials = [];
+            
+            // Create materials for each face (initially black)
+            for (let i = 0; i < 6; i++) {
+                materials.push(new THREE.MeshBasicMaterial({ color: 0x000000 }));
+            }
+            
+            const cubelet = new THREE.Mesh(geometry, materials);
+            return cubelet;
+        }
+        
+        // Color the cube faces
+        function colorCube() {
+            const halfSize = Math.floor(cubeSize / 2);
+            
+            cubelets.forEach(cubelet => {
+                const pos = cubelet.position;
+                const materials = cubelet.material;
+                
+                // Up face (White)
+                if (Math.round(pos.y) === halfSize) {
+                    materials[2].color.setHex(colors.up);
                 }
                 
-                // Render each face
-                for (const face in cubeState) {
-                    const faceEl = faces[face];
-                    if (!faceEl) {
-                        console.error(`Face element '${face}' not found.`);
-                        continue;
-                    }
-                    
-                    cubeState[face].forEach((color, i) => {
-                        const row = Math.floor(i / 3);
-                        const col = i % 3;
-                        
-                        const cubie = document.createElement('div');
-                        cubie.className = 'cubie';
-                        cubie.style.top = (row * 33.33) + '%';
-                        cubie.style.left = (col * 33.33) + '%';
-                        
-                        const sticker = document.createElement('div');
-                        sticker.className = `sticker ${color}`;
-                        cubie.appendChild(sticker);
-                        
-                        faceEl.appendChild(cubie);
-                    });
+                // Down face (Yellow)
+                if (Math.round(pos.y) === -halfSize) {
+                    materials[3].color.setHex(colors.down);
                 }
-                showDebug("Cube rendered successfully");
-            } catch (error) {
-                console.error("Error in renderCube:", error);
-                showDebug("Error rendering cube: " + error.message);
-            }
-        }
-        
-        // Determine which face is most visible based on cube rotation
-        function updateVisibleFace() {
-            // Normalize the rotation angles
-            let x = ((cubeRotation.x % 360) + 360) % 360;
-            let y = ((cubeRotation.y % 360) + 360) % 360;
-            
-            // Determine the most visible face based on rotation angles
-            if (x >= 315 || x < 45) { // Looking mostly straight
-                if (y >= 315 || y < 45) {
-                    visibleFace = 'front';
-                } else if (y >= 45 && y < 135) {
-                    visibleFace = 'left';
-                } else if (y >= 135 && y < 225) {
-                    visibleFace = 'back';
-                } else {
-                    visibleFace = 'right';
-                }
-            } else if (x >= 45 && x < 135) { // Looking mostly down
-                visibleFace = 'bottom';
-            } else if (x >= 225 && x < 315) { // Looking mostly up
-                visibleFace = 'top';
-            }
-            
-            showDebug("Visible face: " + visibleFace);
-        }
-
-        // Shared function to execute moves safely
-        function executeMove(moveFunction) {
-            if (isMoving) {
-                showDebug("Move in progress, please wait");
-                return; // Skip if a move is already in progress
-            }
-            
-            isMoving = true;
-            
-            try {
-                moveFunction();
-                // Validate cube state after each move
-                validateCubeState();
-            } catch (error) {
-                console.error("Error during move:", error);
-                showDebug("Error during move: " + error.message);
-                // Reset cube if a critical error occurs
-                resetCube();
-            } finally {
-                // Release the lock after a short delay
-                setTimeout(() => {
-                    isMoving = false;
-                }, 100);
-            }
-        }
-        
-        // Function to validate and fix cube state
-        function validateCubeState() {
-            const validFaces = ['front', 'back', 'left', 'right', 'top', 'bottom'];
-            const validColors = ['red', 'orange', 'green', 'blue', 'white', 'yellow'];
-            let fixedIssues = false;
-            
-            // Check all faces for invalid values
-            for (const face of validFaces) {
-                if (!cubeState[face] || !Array.isArray(cubeState[face]) || cubeState[face].length !== 9) {
-                    // Reset this face if it's completely invalid
-                    cubeState[face] = Array(9).fill(COLORS[face.toUpperCase()]);
-                    fixedIssues = true;
-                    showDebug(`Fixed invalid face: ${face}`);
-                } else {
-                    // Check individual squares
-                    for (let i = 0; i < 9; i++) {
-                        const color = cubeState[face][i];
-                        if (!color || !validColors.includes(color)) {
-                            // Fix individual square
-                            cubeState[face][i] = COLORS[face.toUpperCase()];
-                            fixedIssues = true;
-                        }
-                    }
-                }
-            }
-            
-            if (fixedIssues) {
-                showDebug("Fixed cube issues");
-            }
-            
-            // Make sure changes are reflected
-            renderCube();
-        }
-        
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            renderCube();
-        });
-        
-        // Functions to handle mouse/touch events for cube rotation
-        function handleMouseDown(e) {
-            isDragging = true;
-            
-            // Determine if it's a touch or mouse event
-            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-            
-            previousMousePosition = {
-                x: clientX,
-                y: clientY
-            };
-            
-            // Prevent default behavior only for touch events to avoid scrolling
-            if (e.type.includes('touch')) {
-                e.preventDefault();
-            }
-        }
-        
-        function handleMouseMove(e) {
-            if (!isDragging) return;
-            
-            // Determine if it's a touch or mouse event
-            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-            
-            const dx = clientX - previousMousePosition.x;
-            const dy = clientY - previousMousePosition.y;
-            
-            // Regular single-touch or mouse rotation of the entire cube
-            // Adjust rotation speed based on screen size
-            const rotationSpeed = window.innerWidth < 480 ? 0.7 : 0.5;
-            
-            cubeRotation.x -= dy * rotationSpeed;
-            cubeRotation.y += dx * rotationSpeed;
-            
-            updateCubeRotation();
-            updateVisibleFace();
-            
-            previousMousePosition = {
-                x: clientX,
-                y: clientY
-            };
-            
-            // Prevent default behavior only for touch events to avoid scrolling
-            if (e.type.includes('touch')) {
-                e.preventDefault();
-            }
-        }
-        
-        function handleMouseUp() {
-            isDragging = false;
-        }
-        
-        function updateCubeRotation() {
-            cube.style.transform = `rotateX(${cubeRotation.x}deg) rotateY(${cubeRotation.y}deg)`;
-        }
-        
-        // Handle tap gesture to rotate the visible face
-        let tapCount = 0;
-        let lastTapTime = 0;
-        
-        function handleTap(e) {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTapTime;
-            
-            if (tapLength < 500 && tapLength > 0) {
-                tapCount++;
                 
-                if (tapCount === 2) {
-                    // Double tap - rotate the visible face clockwise
-                    rotateVisibleFace(false);
-                    e.preventDefault();
-                } else if (tapCount === 3) {
-                    // Triple tap - rotate the visible face counter-clockwise
-                    rotateVisibleFace(true);
-                    e.preventDefault();
-                    tapCount = 0; // Reset after triple tap
+                // Right face (Red)
+                if (Math.round(pos.x) === halfSize) {
+                    materials[0].color.setHex(colors.right);
                 }
-            } else {
-                tapCount = 1;
-            }
-            
-            lastTapTime = currentTime;
-            
-            // Reset tap count after a delay if no more taps
-            setTimeout(() => {
-                if (currentTime === lastTapTime) {
-                    tapCount = 0;
+                
+                // Left face (Orange)
+                if (Math.round(pos.x) === -halfSize) {
+                    materials[1].color.setHex(colors.left);
                 }
-            }, 500);
-        }
-        
-        // Rotate the most visible face
-        function rotateVisibleFace(counterClockwise) {
-            executeMove(() => {
-                switch (visibleFace) {
-                    case 'front': moveF(counterClockwise); break;
-                    case 'back': moveB(counterClockwise); break;
-                    case 'right': moveR(counterClockwise); break;
-                    case 'left': moveL(counterClockwise); break;
-                    case 'top': moveU(counterClockwise); break;
-                    case 'bottom': moveD(counterClockwise); break;
-                    default: 
-                        showDebug("No visible face detected");
-                        break;
+                
+                // Front face (Green)
+                if (Math.round(pos.z) === halfSize) {
+                    materials[4].color.setHex(colors.front);
+                }
+                
+                // Back face (Blue)
+                if (Math.round(pos.z) === -halfSize) {
+                    materials[5].color.setHex(colors.back);
                 }
             });
         }
         
-        // Cube moves
-        function rotateFace(face, clockwise = true) {
-            try {
-                // Clone the face to avoid modifying during rotation
-                const faceCopy = [...cubeState[face]];
+        // Animate the scene
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Gentle rotation of the entire cube when not interacting
+            if (!isDragging && !animating) {
+                pivot.rotation.y += 0.005;
+                pivot.rotation.x += 0.002;
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Handle window resize
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // Mouse down handler
+        function onMouseDown(event) {
+            event.preventDefault();
+            
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            checkIntersection();
+            
+            if (selectedFace) {
+                isDragging = true;
+                startPoint.copy(currentPoint);
+                document.body.style.cursor = 'grabbing';
+            }
+        }
+        
+        // Mouse move handler
+        function onMouseMove(event) {
+            event.preventDefault();
+            
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            if (isDragging && selectedFace) {
+                checkIntersection();
+                handleDrag();
+            }
+        }
+        
+        // Mouse up handler
+        function onMouseUp(event) {
+            if (isDragging && selectedFace) {
+                finishRotation();
+            }
+            
+            isDragging = false;
+            selectedFace = null;
+            document.body.style.cursor = 'auto';
+        }
+        
+        // Touch start handler
+        function onTouchStart(event) {
+            event.preventDefault();
+            
+            const touch = event.touches[0];
+            mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+            
+            checkIntersection();
+            
+            if (selectedFace) {
+                isDragging = true;
+                startPoint.copy(currentPoint);
+            }
+        }
+        
+        // Touch move handler
+        function onTouchMove(event) {
+            event.preventDefault();
+            
+            const touch = event.touches[0];
+            mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+            
+            if (isDragging && selectedFace) {
+                checkIntersection();
+                handleDrag();
+            }
+        }
+        
+        // Touch end handler
+        function onTouchEnd(event) {
+            if (isDragging && selectedFace) {
+                finishRotation();
+            }
+            
+            isDragging = false;
+            selectedFace = null;
+        }
+        
+        // Check for intersection with cube
+        function checkIntersection() {
+            raycaster.setFromCamera(mouse, camera);
+            
+            const intersects = raycaster.intersectObjects(cubelets);
+            
+            if (intersects.length > 0) {
+                const intersect = intersects[0];
                 
-                // Rotate the stickers on the face
-                if (clockwise) {
-                    // Rotate corners clockwise
-                    cubeState[face][0] = faceCopy[6];
-                    cubeState[face][2] = faceCopy[0];
-                    cubeState[face][8] = faceCopy[2];
-                    cubeState[face][6] = faceCopy[8];
+                // Get the face index
+                const faceIndex = intersect.faceIndex;
+                // Integer division to get the face (0-5)
+                const face = Math.floor(faceIndex / 2);
+                
+                currentPoint = intersect.point.clone();
+                
+                if (!selectedFace && isDragging) {
+                    selectedFace = {
+                        cubelet: intersect.object,
+                        face: face,
+                        normal: intersect.face.normal.clone(),
+                        point: intersect.point.clone()
+                    };
                     
-                    // Rotate edges clockwise
-                    cubeState[face][1] = faceCopy[3];
-                    cubeState[face][5] = faceCopy[1];
-                    cubeState[face][7] = faceCopy[5];
-                    cubeState[face][3] = faceCopy[7];
-                } else {
-                    // Rotate corners counter-clockwise
-                    cubeState[face][0] = faceCopy[2];
-                    cubeState[face][2] = faceCopy[8];
-                    cubeState[face][8] = faceCopy[6];
-                    cubeState[face][6] = faceCopy[0];
+                    // Transform the normal to world space
+                    selectedFace.normal.transformDirection(intersect.object.matrixWorld);
                     
-                    // Rotate edges counter-clockwise
-                    cubeState[face][1] = faceCopy[5];
-                    cubeState[face][5] = faceCopy[7];
-                    cubeState[face][7] = faceCopy[3];
-                    cubeState[face][3] = faceCopy[1];
+                    // Determine rotation axis
+                    determineRotationAxis();
                 }
-            } catch (error) {
-                console.error(`Error rotating face ${face}:`, error);
-                showDebug(`Error rotating face ${face}: ${error.message}`);
-                throw error;
             }
         }
         
-        // Implementing each standard move
-        function moveF(prime = false) {
-            rotateFace('front', !prime);
+        // Determine rotation axis based on selected face and movement
+        function determineRotationAxis() {
+            if (!selectedFace) return;
             
-            // Save the affected edge pieces
-            const topRow = [...cubeState.top[6], cubeState.top[7], cubeState.top[8]];
+            // Get the normal in world space
+            const normal = selectedFace.normal;
             
-            if (!prime) {
-                // Clockwise: top -> right -> bottom -> left -> top
-                cubeState.top[6] = cubeState.left[8];
-                cubeState.top[7] = cubeState.left[5];
-                cubeState.top[8] = cubeState.left[2];
-                
-                cubeState.left[2] = cubeState.bottom[0];
-                cubeState.left[5] = cubeState.bottom[1];
-                cubeState.left[8] = cubeState.bottom[2];
-                
-                cubeState.bottom[0] = cubeState.right[6];
-                cubeState.bottom[1] = cubeState.right[3];
-                cubeState.bottom[2] = cubeState.right[0];
-                
-                cubeState.right[0] = topRow[0];
-                cubeState.right[3] = topRow[1];
-                cubeState.right[6] = topRow[2];
+            // Determine which axis is most aligned with the normal
+            const absX = Math.abs(normal.x);
+            const absY = Math.abs(normal.y);
+            const absZ = Math.abs(normal.z);
+            
+            if (absX > absY && absX > absZ) {
+                // X is dominant
+                rotationAxis = 'x';
+            } else if (absY > absX && absY > absZ) {
+                // Y is dominant
+                rotationAxis = 'y';
             } else {
-                // Counter-clockwise: top -> left -> bottom -> right -> top
-                cubeState.top[6] = cubeState.right[0];
-                cubeState.top[7] = cubeState.right[3];
-                cubeState.top[8] = cubeState.right[6];
-                
-                cubeState.right[0] = cubeState.bottom[2];
-                cubeState.right[3] = cubeState.bottom[1];
-                cubeState.right[6] = cubeState.bottom[0];
-                
-                cubeState.bottom[0] = cubeState.left[2];
-                cubeState.bottom[1] = cubeState.left[5];
-                cubeState.bottom[2] = cubeState.left[8];
-                
-                cubeState.left[2] = topRow[8];
-                cubeState.left[5] = topRow[7];
-                cubeState.left[8] = topRow[6];
-            }
-            
-            renderCube();
-        }
-        
-        function moveB(prime = false) {
-            rotateFace('back', !prime);
-            
-            // Save the affected edge pieces
-            const topRow = [cubeState.top[0], cubeState.top[1], cubeState.top[2]];
-            
-            if (!prime) {
-                // Clockwise: top -> left -> bottom -> right -> top
-                cubeState.top[0] = cubeState.right[2];
-                cubeState.top[1] = cubeState.right[5];
-                cubeState.top[2] = cubeState.right[8];
-                
-                cubeState.right[2] = cubeState.bottom[8];
-                cubeState.right[5] = cubeState.bottom[7];
-                cubeState.right[8] = cubeState.bottom[6];
-                
-                cubeState.bottom[6] = cubeState.left[0];
-                cubeState.bottom[7] = cubeState.left[3];
-                cubeState.bottom[8] = cubeState.left[6];
-                
-                cubeState.left[0] = topRow[2];
-                cubeState.left[3] = topRow[1];
-                cubeState.left[6] = topRow[0];
-            } else {
-                // Counter-clockwise: top -> right -> bottom -> left -> top
-                cubeState.top[0] = cubeState.left[6];
-                cubeState.top[1] = cubeState.left[3];
-                cubeState.top[2] = cubeState.left[0];
-                
-                cubeState.left[0] = cubeState.bottom[8];
-                cubeState.left[3] = cubeState.bottom[7];
-                cubeState.left[6] = cubeState.bottom[6];
-                
-                cubeState.bottom[6] = cubeState.right[8];
-                cubeState.bottom[7] = cubeState.right[5];
-                cubeState.bottom[8] = cubeState.right[2];
-                
-                cubeState.right[2] = topRow[0];
-                cubeState.right[5] = topRow[1];
-                cubeState.right[8] = topRow[2];
-            }
-            
-            renderCube();
-        }
-        
-        function moveR(prime = false) {
-            rotateFace('right', !prime);
-            
-            // Save the affected edge pieces
-            const frontCol = [cubeState.front[2], cubeState.front[5], cubeState.front[8]];
-            
-            if (!prime) {
-                // Clockwise: front -> top -> back -> bottom -> front
-                cubeState.front[2] = cubeState.bottom[2];
-                cubeState.front[5] = cubeState.bottom[5];
-                cubeState.front[8] = cubeState.bottom[8];
-                
-                cubeState.bottom[2] = cubeState.back[6];
-                cubeState.bottom[5] = cubeState.back[3];
-                cubeState.bottom[8] = cubeState.back[0];
-                
-                cubeState.back[0] = cubeState.top[8];
-                cubeState.back[3] = cubeState.top[5];
-                cubeState.back[6] = cubeState.top[2];
-                
-                cubeState.top[2] = frontCol[0];
-                cubeState.top[5] = frontCol[1];
-                cubeState.top[8] = frontCol[2];
-            } else {
-                // Counter-clockwise: front -> bottom -> back -> top -> front
-                cubeState.front[2] = cubeState.top[2];
-                cubeState.front[5] = cubeState.top[5];
-                cubeState.front[8] = cubeState.top[8];
-                
-                cubeState.top[2] = cubeState.back[6];
-                cubeState.top[5] = cubeState.back[3];
-                cubeState.top[8] = cubeState.back[0];
-                
-                cubeState.back[0] = cubeState.bottom[8];
-                cubeState.back[3] = cubeState.bottom[5];
-                cubeState.back[6] = cubeState.bottom[2];
-                
-                cubeState.bottom[2] = frontCol[0];
-                cubeState.bottom[5] = frontCol[1];
-                cubeState.bottom[8] = frontCol[2];
-            }
-            
-            renderCube();
-        }
-        
-        function moveL(prime = false) {
-            rotateFace('left', !prime);
-            
-            // Save the affected edge pieces
-            const frontCol = [cubeState.front[0], cubeState.front[3], cubeState.front[6]];
-            
-            if (!prime) {
-                // Clockwise: front -> bottom -> back -> top -> front
-                cubeState.front[0] = cubeState.top[0];
-                cubeState.front[3] = cubeState.top[3];
-                cubeState.front[6] = cubeState.top[6];
-                
-                cubeState.top[0] = cubeState.back[8];
-                cubeState.top[3] = cubeState.back[5];
-                cubeState.top[6] = cubeState.back[2];
-                
-                cubeState.back[2] = cubeState.bottom[6];
-                cubeState.back[5] = cubeState.bottom[3];
-                cubeState.back[8] = cubeState.bottom[0];
-                
-                cubeState.bottom[0] = frontCol[0];
-                cubeState.bottom[3] = frontCol[1];
-                cubeState.bottom[6] = frontCol[2];
-            } else {
-                // Counter-clockwise: front -> top -> back -> bottom -> front
-                cubeState.front[0] = cubeState.bottom[0];
-                cubeState.front[3] = cubeState.bottom[3];
-                cubeState.front[6] = cubeState.bottom[6];
-                
-                cubeState.bottom[0] = cubeState.back[8];
-                cubeState.bottom[3] = cubeState.back[5];
-                cubeState.bottom[6] = cubeState.back[2];
-                
-                cubeState.back[2] = cubeState.top[6];
-                cubeState.back[5] = cubeState.top[3];
-                cubeState.back[8] = cubeState.top[0];
-                
-                cubeState.top[0] = frontCol[0];
-                cubeState.top[3] = frontCol[1];
-                cubeState.top[6] = frontCol[2];
-            }
-            
-            renderCube();
-        }
-        
-        function moveU(prime = false) {
-            rotateFace('top', !prime);
-            
-            // Save the affected edge pieces
-            const frontRow = [cubeState.front[0], cubeState.front[1], cubeState.front[2]];
-            
-            if (!prime) {
-                // Clockwise: front -> right -> back -> left -> front
-                cubeState.front[0] = cubeState.left[0];
-                cubeState.front[1] = cubeState.left[1];
-                cubeState.front[2] = cubeState.left[2];
-                
-                cubeState.left[0] = cubeState.back[0];
-                cubeState.left[1] = cubeState.back[1];
-                cubeState.left[2] = cubeState.back[2];
-                
-                cubeState.back[0] = cubeState.right[0];
-                cubeState.back[1] = cubeState.right[1];
-                cubeState.back[2] = cubeState.right[2];
-                
-                cubeState.right[0] = frontRow[0];
-                cubeState.right[1] = frontRow[1];
-                cubeState.right[2] = frontRow[2];
-            } else {
-                // Counter-clockwise: front -> left -> back -> right -> front
-                cubeState.front[0] = cubeState.right[0];
-                cubeState.front[1] = cubeState.right[1];
-                cubeState.front[2] = cubeState.right[2];
-                
-                cubeState.right[0] = cubeState.back[0];
-                cubeState.right[1] = cubeState.back[1];
-                cubeState.right[2] = cubeState.back[2];
-                
-                cubeState.back[0] = cubeState.left[0];
-                cubeState.back[1] = cubeState.left[1];
-                cubeState.back[2] = cubeState.left[2];
-                
-                cubeState.left[0] = frontRow[0];
-                cubeState.left[1] = frontRow[1];
-                cubeState.left[2] = frontRow[2];
-            }
-            
-            renderCube();
-        }
-        
-        function moveD(prime = false) {
-            rotateFace('bottom', !prime);
-            
-            // Save the affected edge pieces
-            const frontRow = [cubeState.front[6], cubeState.front[7], cubeState.front[8]];
-            
-            if (!prime) {
-                // Clockwise: front -> left -> back -> right -> front
-                cubeState.front[6] = cubeState.right[6];
-                cubeState.front[7] = cubeState.right[7];
-                cubeState.front[8] = cubeState.right[8];
-                
-                cubeState.right[6] = cubeState.back[6];
-                cubeState.right[7] = cubeState.back[7];
-                cubeState.right[8] = cubeState.back[8];
-                
-                cubeState.back[6] = cubeState.left[6];
-                cubeState.back[7] = cubeState.left[7];
-                cubeState.back[8] = cubeState.left[8];
-                
-                cubeState.left[6] = frontRow[0];
-                cubeState.left[7] = frontRow[1];
-                cubeState.left[8] = frontRow[2];
-            } else {
-                // Counter-clockwise: front -> right -> back -> left -> front
-                cubeState.front[6] = cubeState.left[6];
-                cubeState.front[7] = cubeState.left[7];
-                cubeState.front[8] = cubeState.left[8];
-                
-                cubeState.left[6] = cubeState.back[6];
-                cubeState.left[7] = cubeState.back[7];
-                cubeState.left[8] = cubeState.back[8];
-                
-                cubeState.back[6] = cubeState.right[6];
-                cubeState.back[7] = cubeState.right[7];
-                cubeState.back[8] = cubeState.right[8];
-                
-                cubeState.right[6] = frontRow[0];
-                cubeState.right[7] = frontRow[1];
-                cubeState.right[8] = frontRow[2];
-            }
-            
-            renderCube();
-        }
-        
-        // Scramble the cube
-        function scrambleCube() {
-            // Start with a clean cube state to avoid issues
-            resetCube();
-            showDebug("Scrambling cube...");
-            
-            // Small delay before scrambling to ensure reset is complete
-            setTimeout(() => {
-                try {
-                    const moves = ['F', 'F\'', 'B', 'B\'', 'R', 'R\'', 'L', 'L\'', 'U', 'U\'', 'D', 'D\''];
-                    const numMoves = 20;
-                    
-                    for (let i = 0; i < numMoves; i++) {
-                        const randomMove = moves[Math.floor(Math.random() * moves.length)];
-                        
-                        switch (randomMove) {
-                            case 'F': moveF(); break;
-                            case 'F\'': moveF(true); break;
-                            case 'B': moveB(); break;
-                            case 'B\'': moveB(true); break;
-                            case 'R': moveR(); break;
-                            case 'R\'': moveR(true); break;
-                            case 'L': moveL(); break;
-                            case 'L\'': moveL(true); break;
-                            case 'U': moveU(); break;
-                            case 'U\'': moveU(true); break;
-                            case 'D': moveD(); break;
-                            case 'D\'': moveD(true); break;
-                        }
-                    }
-                    
-                    // Verify no black squares after scramble
-                    validateCubeState();
-                    showDebug("Scrambling complete");
-                } catch (error) {
-                    console.error("Error during scramble:", error);
-                    showDebug("Error during scramble: " + error.message);
-                    resetCube();
-                }
-            }, 100);
-        }
-        
-        // Reset cube
-        function resetCube() {
-            cubeState = JSON.parse(JSON.stringify(initialCubeState));
-            renderCube();
-            showDebug("Cube reset");
-        }
-        
-        // Fix common issues
-        function fixMoveF() {
-            // Fix an issue with the moveF function
-            try {
-                // Create a corrected version of the topRow in moveF
-                const fixedMoveF = function(prime = false) {
-                    rotateFace('front', !prime);
-                    
-                    // Save the affected edge pieces correctly
-                    const topRow = [cubeState.top[6], cubeState.top[7], cubeState.top[8]];
-                    
-                    if (!prime) {
-                        // Clockwise: top -> right -> bottom -> left -> top
-                        cubeState.top[6] = cubeState.left[8];
-                        cubeState.top[7] = cubeState.left[5];
-                        cubeState.top[8] = cubeState.left[2];
-                        
-                        cubeState.left[2] = cubeState.bottom[0];
-                        cubeState.left[5] = cubeState.bottom[1];
-                        cubeState.left[8] = cubeState.bottom[2];
-                        
-                        cubeState.bottom[0] = cubeState.right[6];
-                        cubeState.bottom[1] = cubeState.right[3];
-                        cubeState.bottom[2] = cubeState.right[0];
-                        
-                        cubeState.right[0] = topRow[0];
-                        cubeState.right[3] = topRow[1];
-                        cubeState.right[6] = topRow[2];
-                    } else {
-                        // Counter-clockwise: top -> left -> bottom -> right -> top
-                        cubeState.top[6] = cubeState.right[0];
-                        cubeState.top[7] = cubeState.right[3];
-                        cubeState.top[8] = cubeState.right[6];
-                        
-                        cubeState.right[0] = cubeState.bottom[2];
-                        cubeState.right[3] = cubeState.bottom[1];
-                        cubeState.right[6] = cubeState.bottom[0];
-                        
-                        cubeState.bottom[0] = cubeState.left[2];
-                        cubeState.bottom[1] = cubeState.left[5];
-                        cubeState.bottom[2] = cubeState.left[8];
-                        
-                        cubeState.left[2] = topRow[8];
-                        cubeState.left[5] = topRow[7];
-                        cubeState.left[8] = topRow[6];
-                    }
-                    
-                    renderCube();
-                };
-                
-                // Replace the original moveF with the fixed version
-                moveF = fixedMoveF;
-                showDebug("Fixed moveF function");
-            } catch (error) {
-                console.error("Error fixing moveF:", error);
-                showDebug("Error fixing moveF: " + error.message);
+                // Z is dominant
+                rotationAxis = 'z';
             }
         }
         
-        // Initialize and attach event listeners
-        function init() {
-            try {
-                // Fix any known issues
-                fixMoveF();
+        // Handle drag to determine rotation
+        function handleDrag() {
+            if (!selectedFace || !rotationAxis) return;
+            
+            const movement = new THREE.Vector3().subVectors(currentPoint, startPoint);
+            
+            // Create a temporary group for rotation
+            const rotationGroup = new THREE.Group();
+            scene.add(rotationGroup);
+            
+            // Determine which cubelets to rotate based on the position
+            const selectedPosition = selectedFace.cubelet.position.clone();
+            const threshold = 0.5;  // Threshold for determining which layer to rotate
+            
+            let layerCubelets = [];
+            
+            // Select cubelets based on position and rotation axis
+            switch (rotationAxis) {
+                case 'x':
+                    // Find cubelets in the same X layer
+                    layerCubelets = cubelets.filter(cubelet => 
+                        Math.abs(cubelet.position.x - selectedPosition.x) < threshold
+                    );
+                    break;
+                case 'y':
+                    // Find cubelets in the same Y layer
+                    layerCubelets = cubelets.filter(cubelet => 
+                        Math.abs(cubelet.position.y - selectedPosition.y) < threshold
+                    );
+                    break;
+                case 'z':
+                    // Find cubelets in the same Z layer
+                    layerCubelets = cubelets.filter(cubelet => 
+                        Math.abs(cubelet.position.z - selectedPosition.z) < threshold
+                    );
+                    break;
+            }
+            
+            // Prepare for rotation
+            const rotationAmount = movement.length() * 0.1;
+            
+            if (rotationAmount > 0.1) {
+                // Determine rotation direction based on movement
+                const direction = determineRotationDirection(movement);
                 
-                // Mouse events for cube rotation
-                cube.addEventListener('mousedown', handleMouseDown);
+                // Animate the rotation
+                animateRotation(layerCubelets, rotationAxis, direction);
+            }
+            
+            scene.remove(rotationGroup);
+        }
+        
+        // Determine rotation direction based on movement
+        function determineRotationDirection(movement) {
+            if (!selectedFace || !rotationAxis) return 1;
+            
+            const normal = selectedFace.normal;
+            let direction = 1;
+            
+            switch (rotationAxis) {
+                case 'x':
+                    direction = (movement.y * normal.z - movement.z * normal.y) > 0 ? 1 : -1;
+                    break;
+                case 'y':
+                    direction = (movement.z * normal.x - movement.x * normal.z) > 0 ? 1 : -1;
+                    break;
+                case 'z':
+                    direction = (movement.x * normal.y - movement.y * normal.x) > 0 ? 1 : -1;
+                    break;
+            }
+            
+            return direction;
+        }
+        
+        // Animate the rotation of a layer
+        function animateRotation(cubeletsToRotate, axis, direction) {
+            if (animating) return;
+            animating = true;
+            
+            // Create rotation group
+            const rotationGroup = new THREE.Group();
+            scene.add(rotationGroup);
+            
+            // Add cubelets to rotation group
+            cubeletsToRotate.forEach(cubelet => {
+                cube.remove(cubelet);
+                rotationGroup.add(cubelet);
                 
-                // Touch events with better multi-touch handling
-                cube.addEventListener('touchstart', function(e) {
-                    handleTouchStart(e);
-                    // Track tap for face rotation (only for single touches)
-                    if (e.touches.length === 1) {
-                        handleTap(e);
-                    }
-                }, { passive: false });
+                // Store original world position and quaternion
+                cubelet.userData.worldPosition = cubelet.getWorldPosition(new THREE.Vector3());
+                cubelet.userData.worldQuaternion = cubelet.getWorldQuaternion(new THREE.Quaternion());
+            });
+            
+            // Set up rotation
+            const angle = Math.PI / 2 * direction;
+            const rotationMatrix = new THREE.Matrix4();
+            
+            switch (axis) {
+                case 'x':
+                    rotationMatrix.makeRotationX(angle);
+                    break;
+                case 'y':
+                    rotationMatrix.makeRotationY(angle);
+                    break;
+                case 'z':
+                    rotationMatrix.makeRotationZ(angle);
+                    break;
+            }
+            
+            // Apply rotation
+            rotationGroup.updateMatrixWorld();
+            
+            // Return cubelets to main cube group with new orientation
+            cubeletsToRotate.forEach(cubelet => {
+                rotationGroup.remove(cubelet);
                 
-                document.addEventListener('touchmove', function(e) {
-                    handleTouchMove(e);
-                }, { passive: false });
+                // Apply rotation to position and quaternion
+                const worldPosition = cubelet.userData.worldPosition.clone();
+                worldPosition.applyMatrix4(rotationMatrix);
                 
-                document.addEventListener('touchend', function(e) {
-                    handleTouchEnd(e);
-                });
+                const worldQuaternion = cubelet.userData.worldQuaternion.clone();
+                const rotationQuaternion = new THREE.Quaternion();
                 
-                document.addEventListener('mousemove', function(e) {
-                    if (isDragging) {
-                        handleMouseMove(e);
-                    }
-                });
-                
-                document.addEventListener('mouseup', function() {
-                    handleMouseUp();
-                });
-                
-                // Attach event listeners for floating controls
-                document.getElementById('reset').addEventListener('click', resetCube);
-                document.getElementById('scramble').addEventListener('click', scrambleCube);
-                
-                // Prevent zoom on double tap for iOS (specific fix)
-                document.addEventListener('gesturestart', function(e) {
-                    e.preventDefault();
-                });
-                
-                // Add info to help overlay
-                const overlayContent = document.querySelector('.overlay-content');
-                const multiTouchInfo = document.createElement('p');
-                multiTouchInfo.innerHTML = '• <strong>Use two fingers</strong> to swipe on a face to rotate that specific face';
-                overlayContent.appendChild(multiTouchInfo);
-                
-                // Show helpful popup for first-time visitors
-                if (!localStorage.getItem('rubiksCubeVisited')) {
-                    setTimeout(() => {
-                        instructionsOverlay.classList.add('show');
-                        localStorage.setItem('rubiksCubeVisited', 'true');
-                    }, 1000);
+                switch (axis) {
+                    case 'x':
+                        rotationQuaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), angle);
+                        break;
+                    case 'y':
+                        rotationQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), angle);
+                        break;
+                    case 'z':
+                        rotationQuaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), angle);
+                        break;
                 }
                 
-                // Initialize the cube
-                resetCube();
+                worldQuaternion.multiply(rotationQuaternion);
                 
-                // Set initial visible face
-                updateVisibleFace();
+                // Convert to local space
+                cube.updateMatrixWorld();
+                const invMatrix = new THREE.Matrix4().copy(cube.matrixWorld).invert();
                 
-                showDebug("Cube initialized with multi-touch support");
-            } catch (error) {
-                console.error("Error during initialization:", error);
-                showDebug("Error during initialization: " + error.message);
-            }
+                const localPosition = worldPosition.clone().applyMatrix4(invMatrix);
+                cubelet.position.copy(localPosition);
+                
+                // Update rotation
+                const invQuaternion = new THREE.Quaternion().copy(cube.quaternion).invert();
+                const localQuaternion = worldQuaternion.clone().multiply(invQuaternion);
+                cubelet.quaternion.copy(localQuaternion);
+                
+                cube.add(cubelet);
+            });
+            
+            scene.remove(rotationGroup);
+            animating = false;
         }
         
-        // Start initialization when the page is loaded
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
+        // Finish rotation and snap to the nearest 90 degree position
+        function finishRotation() {
+            // Reset for next rotation
+            isDragging = false;
+            selectedFace = null;
+            rotationAxis = null;
         }
+        
+        // Initialize the scene when the page loads
+        window.onload = init;
     </script>
 </body>
 </html>
